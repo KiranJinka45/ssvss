@@ -15,6 +15,8 @@ import {
   Play,
   Heart,
   Share2,
+  ArrowLeft,
+  Truck,
 } from "lucide-react";
 import { SareeSKU } from "@/data/catalog";
 import { useCartStore } from "@/store/useCartStore";
@@ -32,9 +34,27 @@ interface MediaSlide {
   title?: string;
 }
 
-// Helper to guarantee authentic local saree images and prevent any stock/model photos
+// Exact authentic saree image mapping to completely avoid any model or stock photos
+const SKU_TO_IMAGE: Record<string, string> = {
+  "DRM-SS-001": "/images/sarees/semi-01.jpg",
+  "DRM-SS-002": "/images/sarees/semi-02.jpg",
+  "DRM-SS-003": "/images/sarees/semi-03.jpg",
+  "DRM-SS-004": "/images/sarees/semi-04.jpg",
+  "DRM-PS-005": "/images/sarees/pure-01.jpg",
+  "DRM-PS-006": "/images/sarees/pure-02.jpg",
+  "DRM-PS-007": "/images/sarees/pure-03.jpg",
+  "DRM-PS-008": "/images/sarees/pure-04.jpg",
+  "DRM-HL-009": "/images/sarees/handloom-01.jpg",
+  "DRM-HL-010": "/images/sarees/handloom-02.jpg",
+  "DRM-HL-011": "/images/sarees/handloom-03.jpg",
+  "DRM-HL-012": "/images/sarees/handloom-04.jpg",
+};
+
 function getValidSareeImage(item: SareeSKU): string {
-  if (item.images && item.images.length > 0) {
+  if (item?.sku && SKU_TO_IMAGE[item.sku.toUpperCase()]) {
+    return SKU_TO_IMAGE[item.sku.toUpperCase()];
+  }
+  if (item?.images && item.images.length > 0) {
     const valid = item.images.find(
       (img) =>
         img &&
@@ -44,8 +64,8 @@ function getValidSareeImage(item: SareeSKU): string {
     );
     if (valid) return valid;
   }
-  if (item.category === "semi-silk") return "/images/sarees/semi-01.jpg";
-  if (item.category === "handloom-bridal") return "/images/sarees/handloom-01.jpg";
+  if (item?.category === "semi-silk") return "/images/sarees/semi-01.jpg";
+  if (item?.category === "handloom-bridal") return "/images/sarees/handloom-01.jpg";
   return "/images/sarees/pure-01.jpg";
 }
 
@@ -57,11 +77,24 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
   useEffect(() => {
     try {
       const savedCustom = localStorage.getItem("loom_custom_products");
-      if (savedCustom) {
-        let customProducts = JSON.parse(savedCustom) as SareeSKU[];
+      if (savedCustom && savedCustom.trim()) {
+        let customProducts: SareeSKU[] = [];
+        try {
+          const parsed = JSON.parse(savedCustom);
+          if (Array.isArray(parsed)) {
+            customProducts = parsed;
+          }
+        } catch {
+          customProducts = [];
+        }
         // Sanitize out any model or unsplash images from local storage
         let modified = false;
         customProducts = customProducts.map((p) => {
+          const authenticImg = SKU_TO_IMAGE[p.sku.toUpperCase()];
+          if (authenticImg) {
+            modified = true;
+            return { ...p, images: [authenticImg] };
+          }
           const filtered = p.images?.filter(
             (img) =>
               img &&
@@ -106,7 +139,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
     }
   }, [saree.sku, saree.id, saree.category]);
 
-  // Construct Media Carousel Items (Authentic single saree image + optional loom video, no side images)
+  // Construct Media Carousel Items (Authentic single saree image + optional loom video)
   const mediaSlides: MediaSlide[] = React.useMemo(() => {
     const slides: MediaSlide[] = [];
 
@@ -119,7 +152,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
       title: currentSaree.title,
     });
 
-    // 2. Saree Loom Video (if custom video added, or default loom demo)
+    // 2. Saree Loom Video
     const vids: string[] = [];
     if (currentSaree.videos && Array.isArray(currentSaree.videos)) {
       currentSaree.videos.forEach((v) => {
@@ -227,23 +260,16 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1A1A1A] font-sans pt-3 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb Navigation (Clean & Minimal) */}
-        <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-5 font-sans">
-          <Link href="/" className="hover:text-[#5C1624] transition-colors">
-            Home
-          </Link>
-          <span>/</span>
+        {/* Back Button on Left Side of Page */}
+        <div className="mb-4">
           <Link
             href={`/collections/${currentSaree.category}`}
-            className="hover:text-[#5C1624] transition-colors capitalize"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-[#5C1624] bg-white hover:bg-gray-50 border border-gray-200/90 rounded-full px-4 py-2 transition-all shadow-xs group"
           >
-            {currentSaree.categoryName || currentSaree.category.replace("-", " ")}
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back</span>
           </Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium truncate max-w-xs">
-            {currentSaree.title}
-          </span>
-        </nav>
+        </div>
 
         {/* Main 2-Column Product Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
@@ -273,7 +299,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                 />
               )}
 
-              {/* Top-Left Toggle Pill: Photo vs Loom Video (Zero left side images needed!) */}
+              {/* Top-Left Toggle Pill: Photo vs Loom Video */}
               {hasVideo && (
                 <div className="absolute top-3 left-3 z-10 flex items-center p-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 shadow-md">
                   <button
@@ -376,10 +402,17 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               </span>
             </div>
 
-            {/* Sku */}
-            <div className="text-xs text-gray-500 pt-0.5">
-              <span className="font-medium text-gray-700">Sku:</span>{" "}
-              <span>{currentSaree.sku}</span>
+            {/* Sku & FREE Delivery (Placed right next to Sku) */}
+            <div className="flex flex-wrap items-center gap-2.5 text-xs pt-0.5">
+              <div className="text-gray-500">
+                <span className="font-semibold text-gray-700">Sku:</span>{" "}
+                <span className="font-mono text-gray-800">{currentSaree.sku}</span>
+              </div>
+              <span className="text-gray-300">•</span>
+              <div className="inline-flex items-center gap-1.5 text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full font-medium">
+                <Truck className="w-3.5 h-3.5 text-emerald-700" />
+                <span>FREE delivery within 2–4 days</span>
+              </div>
             </div>
 
             {/* MORE COLORS Swatches (Authentic local saree images only) */}
@@ -527,7 +560,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               </div>
             )}
 
-            {/* EXPANDABLE PRODUCT DETAILS SECTION (Enabled when user clicks the Product Details button) */}
+            {/* EXPANDABLE PRODUCT DETAILS SECTION (Enabled when user clicks Product Details button) */}
             {showProductDetails && (
               <div className="pt-3 space-y-3 animate-fadeIn">
                 {/* Got Questions? Chat with us */}
@@ -560,7 +593,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                   </div>
                 </div>
 
-                {/* Clean Collapsible Accordions (Image 2 Reference) */}
+                {/* Clean Collapsible Accordions */}
                 <div className="space-y-2 font-sans text-xs">
                   {/* 1. Product Information */}
                   <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-xs">

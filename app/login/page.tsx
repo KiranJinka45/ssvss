@@ -15,6 +15,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
   const [tab, setTab] = useState<"signin" | "signup">("signin");
@@ -24,9 +25,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const { loginAsCustomer } = useAuthStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    loginAsCustomer({
+      name: name || (email ? email.split("@")[0] : "Valued Customer"),
+      email,
+      phone,
+    });
     setSubmitted(true);
   };
 

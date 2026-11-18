@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -17,6 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const TICKER_ITEMS = [
   "CENTRAL SILK BOARD SILK MARK CERTIFIED",
@@ -32,9 +33,18 @@ const TICKER_ITEMS = [
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { openCart, getTotalItemsCount, wishlistSkus } = useCartStore();
+  const { isLoggedIn, user, logout, syncFromStorage } = useAuthStore();
   const totalCartCount = getTotalItemsCount();
+
+  useEffect(() => {
+    setMounted(true);
+    syncFromStorage();
+  }, [syncFromStorage]);
+
+  const userIsLoggedIn = mounted ? isLoggedIn : false;
 
   const navLinks = [
     { label: "Pure Mulberry Silk", href: "/collections/pure-silk" },
@@ -147,15 +157,49 @@ export function Navbar() {
             )}
           </button>
 
-          {/* Login / Sign In Button (Placed right beside Cart button - Pushpalatha Silks Reference) */}
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold-600/80 bg-white/70 hover:bg-maroon hover:text-canvas hover:border-maroon text-maroon transition-all text-xs font-semibold tracking-wide shadow-2xs group"
-            title="Sign In / Customer Login"
-          >
-            <User className="w-3.5 h-3.5 text-gold-600 group-hover:text-gold-300 transition-colors" />
-            <span>Login</span>
-          </Link>
+          {/* Login Button (ONLY SHOWN WHEN USER/ADMIN IS NOT LOGGED IN) */}
+          {!userIsLoggedIn ? (
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gold-600/80 bg-white/70 hover:bg-maroon hover:text-canvas hover:border-maroon text-maroon transition-all text-xs font-semibold tracking-wide shadow-2xs group"
+              title="Sign In / Customer Login"
+            >
+              <User className="w-3.5 h-3.5 text-gold-600 group-hover:text-gold-300 transition-colors" />
+              <span>Login</span>
+            </Link>
+          ) : (
+            /* Authenticated User / Admin Pill with Sign Out */
+            <div className="flex items-center gap-2">
+              {user?.role === "admin" ? (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-maroon/30 bg-maroon/10 text-maroon text-xs font-semibold hover:bg-maroon hover:text-canvas transition-all"
+                  title="Weaver Admin Portal"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-gold-700" />
+                  <span className="hidden sm:inline">Admin Desk</span>
+                  <span className="sm:hidden">Admin</span>
+                </Link>
+              ) : (
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 text-emerald-900 text-xs font-semibold"
+                  title={`Signed in as ${user?.name || "Customer"}`}
+                >
+                  <User className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="truncate max-w-[85px] sm:max-w-[120px]">{user?.name || "Customer"}</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={logout}
+                className="text-[11px] font-medium text-loom-stone hover:text-maroon underline transition-colors px-1"
+                title="Sign Out"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -178,14 +222,36 @@ export function Navbar() {
             </Link>
           ))}
           <div className="pt-2 flex flex-col gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 bg-maroon text-canvas font-semibold rounded-md text-sm flex items-center justify-center gap-2 shadow-sm"
-            >
-              <User className="w-4 h-4 text-gold-300" />
-              Customer Login / Sign In
-            </Link>
+            {!userIsLoggedIn ? (
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2.5 bg-maroon text-canvas font-semibold rounded-md text-sm flex items-center justify-center gap-2 shadow-sm"
+              >
+                <User className="w-4 h-4 text-gold-300" />
+                Customer Login / Sign In
+              </Link>
+            ) : (
+              <div className="p-3 rounded-lg bg-canvas-surface border border-loom-border/80 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-loom-charcoal">
+                  <User className="w-4 h-4 text-maroon" />
+                  <span className="font-semibold">{user?.name || "Logged In"}</span>
+                  <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-maroon/10 text-maroon font-bold">
+                    {user?.role === "admin" ? "Admin" : "Customer"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-xs text-red-600 font-semibold underline hover:text-red-700"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
             <Link
               href="/wholesale"
               onClick={() => setMobileMenuOpen(false)}

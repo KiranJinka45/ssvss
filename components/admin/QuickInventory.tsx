@@ -17,6 +17,7 @@ import {
 import { CATALOG, SareeSKU, StockStatus } from "@/data/catalog";
 import { formatINR, calculateUnitProfit } from "@/lib/pricing";
 import { MERCHANT_CONFIG } from "@/lib/config";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const ADMIN_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN || "2027";
 
@@ -24,6 +25,7 @@ export function QuickInventory() {
   const [pin, setPin] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinError, setPinError] = useState(false);
+  const { loginAsAdmin, logout: storeLogout } = useAuthStore();
 
   // Local inventory state
   const [inventory, setInventory] = useState<SareeSKU[]>(CATALOG);
@@ -40,6 +42,7 @@ export function QuickInventory() {
     const auth = sessionStorage.getItem("admin_auth");
     if (auth === "true") {
       setIsAuthenticated(true);
+      loginAsAdmin();
     }
 
     const savedOverrides = localStorage.getItem("loom_inventory_overrides");
@@ -55,7 +58,7 @@ export function QuickInventory() {
         console.warn("Could not load inventory overrides:", err);
       }
     }
-  }, []);
+  }, [loginAsAdmin]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +66,7 @@ export function QuickInventory() {
       setIsAuthenticated(true);
       setPinError(false);
       sessionStorage.setItem("admin_auth", "true");
+      loginAsAdmin();
     } else {
       setPinError(true);
     }
@@ -197,6 +201,7 @@ export function QuickInventory() {
           onClick={() => {
             setIsAuthenticated(false);
             sessionStorage.removeItem("admin_auth");
+            storeLogout();
           }}
           className="px-4 py-2 rounded-lg bg-canvas-surface hover:bg-canvas text-xs font-semibold text-loom-stone hover:text-maroon border border-loom-border transition-colors"
         >

@@ -1,9 +1,19 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MapPin, Phone, Mail, ShieldCheck, Truck, Sparkles, Award } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
 
 export function Footer() {
+  const pathname = usePathname();
+
+  // Do not render storefront footer on admin console
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <footer className="bg-[#FAF7F2] border-t border-loom-border/60 text-loom-charcoal">
       {/* 4 Clean Minimal Trust Highlights */}

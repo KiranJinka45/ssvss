@@ -46,6 +46,11 @@ export function Navbar() {
 
   const userIsLoggedIn = mounted ? isLoggedIn : false;
 
+  // Do not render storefront navbar on admin console
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const navLinks = [
     { label: "Pure Mulberry Silk", href: "/collections/pure-silk" },
     { label: "Semi-Silk Festive", href: "/collections/semi-silk" },

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   X,
   Trash2,
@@ -21,6 +22,7 @@ import { cleanPhoneNumber } from "@/lib/whatsapp";
 import { MERCHANT_CONFIG } from "@/lib/config";
 
 export function CartDrawer() {
+  const pathname = usePathname();
   const {
     items,
     isCartOpen,
@@ -35,6 +37,10 @@ export function CartDrawer() {
     getGrandTotal,
     isB2BMode,
   } = useCartStore();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const [customerName, setCustomerName] = useState("");
   const [city, setCity] = useState("");

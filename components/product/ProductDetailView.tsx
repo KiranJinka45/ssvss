@@ -6,14 +6,16 @@ import {
   ShoppingBag,
   MessageCircle,
   Check,
-  Truck,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Maximize2,
   X,
   Play,
   Video as VideoIcon,
+  Heart,
+  Share2,
 } from "lucide-react";
 import { SareeSKU } from "@/data/catalog";
 import { useCartStore } from "@/store/useCartStore";
@@ -83,7 +85,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
       });
     });
 
-    // 2. Saree Videos (from videos[] or reelVideoPlaceholderUrl)
+    // 2. Saree Videos
     const vids: string[] = [];
     if (currentSaree.videos && Array.isArray(currentSaree.videos)) {
       currentSaree.videos.forEach((v) => {
@@ -97,7 +99,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
       vids.push(currentSaree.reelVideoPlaceholderUrl);
     }
 
-    // Default sample handloom demonstration video if none added
+    // Default sample demonstration video if none added
     if (vids.length === 0) {
       vids.push("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4");
     }
@@ -118,15 +120,20 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [addedToast, setAddedToast] = useState(false);
-  const { addItem } = useCartStore();
+  const [shareToast, setShareToast] = useState(false);
 
-  const relatedCarouselRef = useRef<HTMLDivElement>(null);
+  // Accordion states (Image 3 reference)
+  const [openAccordion, setOpenAccordion] = useState<string | null>("info");
+
+  const toggleAccordion = (section: string) => {
+    setOpenAccordion((prev) => (prev === section ? null : section));
+  };
+
+  const { addItem, toggleWishlist, isInWishlist } = useCartStore();
+  const isWishlisted = isInWishlist(currentSaree.sku);
 
   const currentIndex = activeSlideIndex >= mediaSlides.length ? 0 : activeSlideIndex;
   const currentSlide = mediaSlides[currentIndex] || mediaSlides[0];
-
-  const savings = Math.max(0, currentSaree.showroomPrice - currentSaree.price);
-  const savingsPercent = Math.round((savings / currentSaree.showroomPrice) * 100);
 
   const incrementQty = () =>
     setQuantity((prev) => Math.min(prev + 1, currentSaree.stockCount || 10));
@@ -137,7 +144,31 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
       addItem(currentSaree, "Standard Unstitched Blouse", false);
     }
     setAddedToast(true);
-    setTimeout(() => setAddedToast(false), 3000);
+    setTimeout(() => setAddedToast(false), 2500);
+  };
+
+  const handleToggleWishlist = () => {
+    toggleWishlist(currentSaree.sku);
+  };
+
+  const handleShare = async () => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: currentSaree.title,
+          text: `Check out ${currentSaree.title} at Dharmavaram Silk Looms`,
+          url: window.location.href,
+        });
+        return;
+      } catch {
+        // Fallback to clipboard
+      }
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setShareToast(true);
+      setTimeout(() => setShareToast(false), 2500);
+    }
   };
 
   const handlePrevSlide = () => {
@@ -148,121 +179,54 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
     setActiveSlideIndex((prev) => (prev === mediaSlides.length - 1 ? 0 : prev + 1));
   };
 
-  const scrollRelated = (direction: "left" | "right") => {
-    if (relatedCarouselRef.current) {
-      const scrollAmount = direction === "left" ? -180 : 180;
-      relatedCarouselRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
-
-  // WhatsApp order URL
+  // WhatsApp instant order URL
   const whatsappUrl = `https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(
     `Hello Dharmavaram Silk Looms, I want to order this saree:\n\n*Product:* ${currentSaree.title}\n*SKU:* ${currentSaree.sku}\n*Fabric:* ${currentSaree.fabric}\n*Color:* ${currentSaree.colorName}\n*Price:* ₹${currentSaree.price.toLocaleString("en-IN")}\n*Quantity:* ${quantity}\n\nPlease share payment details and dispatch confirmation.`
   )}`;
 
   return (
-    <div className="min-h-screen bg-[#0C0C0E] text-[#F5EFE6] pt-1.5 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Link */}
-        <div className="mb-2">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1A1A1A] font-sans pt-3 pb-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb Navigation (Exact Valli Silks Reference) */}
+        <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-5 font-sans">
+          <Link href="/" className="hover:text-[#5C1624] transition-colors">
+            Home
+          </Link>
+          <span>/</span>
           <Link
             href={`/collections/${currentSaree.category}`}
-            className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#E5B842] transition-colors font-medium"
+            className="hover:text-[#5C1624] transition-colors capitalize"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Collection</span>
+            {currentSaree.categoryName || currentSaree.category.replace("-", " ")}
           </Link>
-        </div>
+          <span>/</span>
+          <span className="text-gray-900 font-medium truncate max-w-xs">
+            {currentSaree.title}
+          </span>
+        </nav>
 
-        {/* 2-Column Product Detail Layout (Simple, Elegant & Fits Viewport) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-          {/* LEFT COLUMN: Clean Image + Video Interactive Media Carousel */}
-          <div className="lg:col-span-6 space-y-2">
-            {/* Main Carousel Frame */}
-            <div className="relative rounded-2xl overflow-hidden bg-[#141417] border border-white/10 shadow-xl flex items-center justify-center p-2 sm:p-2.5 max-h-[360px] lg:max-h-[390px] group">
-              {/* Slide Content: Video or Image */}
-              {currentSlide?.type === "video" ? (
-                <div className="relative w-full h-[330px] lg:h-[360px] bg-black/90 rounded-xl overflow-hidden flex items-center justify-center">
-                  <video
-                    key={currentSlide.url}
-                    src={currentSlide.url}
-                    controls
-                    playsInline
-                    className="w-full h-full object-contain"
-                  />
-                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#E5B842]/40 text-[#E5B842] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 pointer-events-none">
-                    <VideoIcon className="w-3.5 h-3.5" />
-                    <span>Loom Video Reel</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative w-full h-[330px] lg:h-[360px] flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={currentSlide?.url}
-                    alt={currentSlide?.title || currentSaree.title}
-                    className="w-full h-auto max-h-[330px] lg:max-h-[360px] object-contain rounded-xl select-none"
-                  />
-                </div>
-              )}
-
-              {/* Prev / Next Navigation Arrows */}
-              {mediaSlides.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handlePrevSlide}
-                    aria-label="Previous slide"
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 transition-all opacity-80 group-hover:opacity-100 hover:scale-105"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextSlide}
-                    aria-label="Next slide"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 transition-all opacity-80 group-hover:opacity-100 hover:scale-105"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-
-              {/* Fullscreen Expand Button (Matching Valli Silks ⛶) */}
-              <button
-                type="button"
-                onClick={() => setIsFullscreen(true)}
-                aria-label="Full screen view"
-                className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 backdrop-blur-sm transition-all"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
-
-              {/* Counter Badge */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[10px] text-gray-300 font-mono border border-white/10 pointer-events-none">
-                {currentIndex + 1} / {mediaSlides.length}{" "}
-                {currentSlide?.type === "video" ? "• Video" : "• Photo"}
-              </div>
-            </div>
-
-            {/* Thumbnail Row (Images + Videos) */}
+        {/* Main 2-Column Product Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* LEFT COLUMN: Media Gallery (Vertical Thumbnails + Main Display) */}
+          <div className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-3.5 sm:gap-4 items-start">
+            {/* Vertical Thumbnails List (Left Side) */}
             {mediaSlides.length > 1 && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+              <div className="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto no-scrollbar shrink-0 w-full sm:w-20 max-h-[500px]">
                 {mediaSlides.map((slide, idx) => (
                   <button
                     key={slide.id}
                     type="button"
                     onClick={() => setActiveSlideIndex(idx)}
-                    className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
+                    className={`relative w-16 sm:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
                       idx === currentIndex
-                        ? "border-[#E5B842] scale-102 shadow-md ring-1 ring-[#E5B842]/50"
-                        : "border-white/15 opacity-60 hover:opacity-100"
+                        ? "border-[#5C1624] ring-2 ring-[#5C1624]/20 shadow-sm"
+                        : "border-gray-200 hover:border-gray-400 opacity-70 hover:opacity-100"
                     }`}
                   >
                     {slide.type === "video" ? (
-                      <div className="w-full h-full bg-[#1F1F24] flex flex-col items-center justify-center text-white">
-                        <Play className="w-4 h-4 text-[#E5B842] fill-[#E5B842]" />
-                        <span className="text-[8px] font-bold tracking-tight text-gray-300 mt-0.5">
+                      <div className="w-full h-full bg-[#18181B] flex flex-col items-center justify-center text-white">
+                        <Play className="w-5 h-5 text-[#C59B27] fill-[#C59B27]" />
+                        <span className="text-[9px] font-bold tracking-tight text-white/90 mt-1">
                           VIDEO
                         </span>
                       </div>
@@ -278,187 +242,382 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                 ))}
               </div>
             )}
+
+            {/* Large Main Media Display (Right of Thumbnails) */}
+            <div className="relative flex-1 w-full rounded-2xl overflow-hidden bg-white border border-gray-200/90 shadow-sm group aspect-[3/4] max-h-[500px] flex items-center justify-center">
+              {currentSlide?.type === "video" ? (
+                <div className="w-full h-full bg-black flex items-center justify-center">
+                  <video
+                    key={currentSlide.url}
+                    src={currentSlide.url}
+                    controls
+                    playsInline
+                    autoPlay
+                    muted
+                    loop
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md text-amber-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow">
+                    <VideoIcon className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Loom Video</span>
+                  </div>
+                </div>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={currentSlide?.url}
+                  alt={currentSlide?.title || currentSaree.title}
+                  className="w-full h-full object-cover select-none"
+                />
+              )}
+
+              {/* Fullscreen Expand Button (Matching Valli Silks ⛶) */}
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(true)}
+                aria-label="Expand image"
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-black flex items-center justify-center shadow-md transition-all border border-gray-100"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+
+              {/* Prev / Next Carousel Arrow Buttons (Shown on Hover) */}
+              {mediaSlides.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevSlide}
+                    aria-label="Previous slide"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextSlide}
+                    aria-label="Next slide"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
-          {/* RIGHT COLUMN: Product Details, Color Variations & Buying Actions */}
-          <div className="lg:col-span-6 space-y-2.5">
-            {/* Tag & Title */}
+          {/* RIGHT COLUMN: Clean Product Details, Colors & Buying Actions */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* Title */}
             <div>
-              <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#D4AF37] block">
-                DHARMAVARAM
-              </span>
-              <h1 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold text-[#F5EFE6] leading-snug">
+              <h1 className="font-serif text-2xl sm:text-3xl font-medium text-gray-900 leading-snug">
                 {currentSaree.title}
               </h1>
             </div>
 
-            {/* Price, Savings & Free Delivery */}
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-bold text-[#FBBF24]">
+            {/* Price & Taxes Note (Exact Reference) */}
+            <div className="pt-0.5">
+              <div className="flex items-baseline gap-3">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-950">
                   ₹{currentSaree.price.toLocaleString("en-IN")}
                 </span>
-                <span className="text-xs text-gray-400 line-through">
-                  M.R.P: ₹{currentSaree.showroomPrice.toLocaleString("en-IN")}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded">
-                  {savingsPercent}% OFF Special Deal
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2.5 text-xs">
-                <span className="flex items-center gap-1 text-emerald-400 font-semibold text-[11px]">
-                  <Check className="w-3.5 h-3.5" />
-                  Save ₹{savings.toLocaleString("en-IN")}
-                </span>
-                <span className="text-gray-600">•</span>
-                <span className="flex items-center gap-1 text-amber-300 font-medium text-[11px]">
-                  <Truck className="w-3.5 h-3.5 text-[#E5B842]" />
-                  FREE delivery within 2–4 days
-                </span>
-              </div>
-            </div>
-
-            {/* Clean, Simple Description */}
-            <p className="text-xs text-gray-300 leading-relaxed font-sans line-clamp-2">
-              {currentSaree.description}
-            </p>
-
-            {/* Specification Grid (FABRIC | COLOR) */}
-            <div className="rounded-xl border border-white/10 bg-[#18181B] px-3.5 py-1.5 grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
-                  FABRIC
-                </span>
-                <span className="font-medium text-[#F5EFE6] text-xs truncate block">
-                  {currentSaree.fabric}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
-                  COLOR
-                </span>
-                <span className="font-medium text-[#F5EFE6] text-xs truncate block">
-                  {currentSaree.colorName}
-                </span>
-              </div>
-            </div>
-
-            {/* MORE COLORS & WEAVES (Inline Carousel - Matching Reference Screenshot) */}
-            {relatedItems.length > 0 && (
-              <div className="pt-0.5 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#E5B842]">
-                    MORE COLORS & WEAVES ({relatedItems.length})
+                {currentSaree.showroomPrice > currentSaree.price && (
+                  <span className="text-sm text-gray-400 line-through">
+                    ₹{currentSaree.showroomPrice.toLocaleString("en-IN")}
                   </span>
-                  {relatedItems.length > 3 && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => scrollRelated("left")}
-                        aria-label="Scroll related weaves left"
-                        className="p-1 rounded bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors"
-                      >
-                        <ChevronLeft className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => scrollRelated("right")}
-                        aria-label="Scroll related weaves right"
-                        className="p-1 rounded bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors"
-                      >
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Horizontal Scrolling Color / Similar Sarees Carousel */}
-                <div
-                  ref={relatedCarouselRef}
-                  className="flex items-center gap-2 overflow-x-auto pb-1 scroll-smooth"
-                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                >
-                  {relatedItems.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/product/${item.sku.toLowerCase()}`}
-                      className="group shrink-0 w-24 sm:w-28 rounded-xl border border-white/10 hover:border-[#E5B842] bg-[#18181B] p-1.5 transition-all hover:scale-103"
-                    >
-                      <div className="w-full h-14 sm:h-16 rounded-lg overflow-hidden bg-black/40 mb-1 flex items-center justify-center">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={item.images[0]}
-                          alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-                      <p className="text-[10px] text-gray-300 font-medium truncate group-hover:text-[#E5B842]">
-                        {item.colorName ? item.colorName.split(" ")[0] : item.title}
-                      </p>
-                      <p className="text-[10px] font-bold text-[#FBBF24]">
-                        ₹{item.price.toLocaleString("en-IN")}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
+                )}
               </div>
-            )}
+              <p className="text-xs text-gray-500 mt-1">Inclusive of all taxes.</p>
+            </div>
 
-            {/* Quantity Stepper & In-Stock Indicator */}
-            <div className="flex items-center gap-3 pt-0.5">
-              <div className="inline-flex items-center rounded-lg border border-white/20 bg-[#18181B] px-2.5 py-1 text-xs text-white">
+            {/* Trust Highlights (Unique • Premium • Quality) */}
+            <div className="flex items-center gap-4 text-xs text-gray-700 font-medium pt-1">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-gray-900" />
+                Unique
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-gray-900" />
+                Premium
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-gray-900" />
+                Silk Mark Quality
+              </span>
+            </div>
+
+            {/* Sku */}
+            <div className="text-xs text-gray-500 pt-0.5">
+              <span className="font-medium text-gray-700">Sku:</span>{" "}
+              <span>{currentSaree.sku}</span>
+            </div>
+
+            {/* MORE COLORS Swatches (Exact Valli Silks Image 1 Reference) */}
+            <div className="pt-2 space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-900 block">
+                MORE COLORS
+              </span>
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+                {/* Current Active Saree */}
+                <div className="w-20 sm:w-24 shrink-0 rounded-lg border-2 border-[#5C1624] p-1 bg-white shadow-xs">
+                  <div className="aspect-[4/5] rounded overflow-hidden bg-gray-100 mb-1">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={currentSaree.images[0]}
+                      alt={currentSaree.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-900 font-medium truncate text-center">
+                    {currentSaree.colorName.split(" ")[0]}
+                  </p>
+                </div>
+
+                {/* Related Colors from Loom */}
+                {relatedItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/product/${item.sku.toLowerCase()}`}
+                    className="w-20 sm:w-24 shrink-0 rounded-lg border border-gray-200 hover:border-gray-400 p-1 bg-white hover:shadow-xs transition-all opacity-85 hover:opacity-100"
+                  >
+                    <div className="aspect-[4/5] rounded overflow-hidden bg-gray-100 mb-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.images[0]}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-700 font-medium truncate text-center">
+                      {item.colorName.split(" ")[0]}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions Row: Quantity Stepper + Add To Cart + Wishlist + Share */}
+            <div className="pt-2 flex items-center gap-2.5 sm:gap-3">
+              {/* Quantity Stepper */}
+              <div className="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900">
                 <button
                   type="button"
                   onClick={decrementQty}
-                  className="px-2 py-0.5 text-gray-400 hover:text-[#FBBF24] transition-colors text-sm"
+                  className="px-2 text-gray-500 hover:text-black transition-colors font-medium text-base"
                 >
                   -
                 </button>
-                <span className="px-3 font-semibold text-white">{quantity}</span>
+                <span className="px-2 font-semibold text-gray-900 min-w-[20px] text-center">
+                  {quantity}
+                </span>
                 <button
                   type="button"
                   onClick={incrementQty}
-                  className="px-2 py-0.5 text-gray-400 hover:text-[#FBBF24] transition-colors text-sm"
+                  className="px-2 text-gray-500 hover:text-black transition-colors font-medium text-base"
                 >
                   +
                 </button>
               </div>
 
-              <div className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                <Check className="w-3.5 h-3.5" />
-                <span>IN STOCK • Ready to Dispatch</span>
-              </div>
-            </div>
-
-            {/* Action Buttons: ADD TO CART (Gold) + BUY ON WHATSAPP (Green) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              {/* Add to Cart (Clean Rounded Pill Button) */}
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="w-full py-3 px-4 rounded-lg bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+                className="flex-1 py-3 px-6 rounded-full border border-gray-900 bg-white hover:bg-gray-950 hover:text-white text-gray-900 font-semibold text-sm transition-all shadow-xs flex items-center justify-center gap-2 active:scale-98"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>ADD TO CART</span>
+                <span>Add To Cart</span>
               </button>
 
+              {/* Wishlist Button */}
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                aria-label="Wishlist"
+                className={`p-3 rounded-full border transition-colors flex items-center justify-center ${
+                  isWishlisted
+                    ? "border-red-300 bg-red-50 text-red-600"
+                    : "border-gray-300 hover:border-gray-900 text-gray-700 bg-white"
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-600" : ""}`} />
+              </button>
+
+              {/* Share Button */}
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Share"
+                className="p-3 rounded-full border border-gray-300 hover:border-gray-900 text-gray-700 bg-white transition-colors flex items-center justify-center"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* BUY NOW Button (Deep Maroon / Authentic Indian Handloom Style) */}
+            <div className="pt-1">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3 px-4 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+                className="w-full py-3.5 px-6 rounded-lg bg-[#5C1624] hover:bg-[#460F1C] text-white font-semibold text-sm tracking-wide shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98"
               >
-                <MessageCircle className="w-4 h-4 fill-white" />
-                <span>BUY ON WHATSAPP</span>
+                <span>BUY NOW • ORDER ON WHATSAPP</span>
               </a>
             </div>
 
-            {/* Added to cart toast message */}
+            {/* Notification Toasts */}
             {addedToast && (
-              <div className="p-2 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs text-center font-medium animate-fadeIn">
-                ✓ Added {quantity} saree(s) to your Cart!
+              <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs text-center font-medium animate-fadeIn">
+                ✓ Added {quantity} saree(s) to your bag!
               </div>
             )}
+            {shareToast && (
+              <div className="p-2.5 rounded-lg bg-gray-100 border border-gray-300 text-gray-800 text-xs text-center font-medium animate-fadeIn">
+                ✓ Link copied to clipboard!
+              </div>
+            )}
+
+            {/* Got Questions? Chat with us (Image 3 Reference) */}
+            <div className="pt-4 border-t border-gray-200 mt-4 flex items-center justify-between text-xs text-gray-700">
+              <span className="font-medium">Got Questions?</span>
+              <a
+                href={`https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 font-semibold text-[#166534] hover:underline"
+              >
+                <MessageCircle className="w-4 h-4 fill-[#166534] text-[#166534]" />
+                <span>Chat with us</span>
+              </a>
+            </div>
+
+            {/* Trust Badges (Image 3 Reference: Easy Payments • Easy Returns • COD) */}
+            <div className="grid grid-cols-3 gap-2 py-3 border-y border-gray-200 my-3 text-center">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-base">💳</span>
+                <span className="text-[11px] font-medium text-gray-800">Easy Payments</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-base">📦</span>
+                <span className="text-[11px] font-medium text-gray-800">Easy Returns</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-base">🏷️</span>
+                <span className="text-[11px] font-medium text-gray-800">Silk Mark Certified</span>
+              </div>
+            </div>
+
+            {/* Clean Collapsible Accordions (Image 3 Reference) */}
+            <div className="space-y-2 pt-1 font-sans text-xs">
+              {/* 1. Product Information */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion("info")}
+                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <span>Product Information</span>
+                  {openAccordion === "info" ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+                {openAccordion === "info" && (
+                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-2 text-xs">
+                    <div className="grid grid-cols-2 gap-y-1.5 py-1">
+                      <span className="text-gray-500 font-medium">Fabric:</span>
+                      <span className="text-gray-900 font-semibold">{currentSaree.fabric}</span>
+
+                      <span className="text-gray-500 font-medium">Weave:</span>
+                      <span className="text-gray-900">Traditional Handloom Pit-Loom</span>
+
+                      <span className="text-gray-500 font-medium">Zari / Pattern:</span>
+                      <span className="text-gray-900">{currentSaree.zariType}</span>
+
+                      <span className="text-gray-500 font-medium">Border Type:</span>
+                      <span className="text-gray-900">{currentSaree.borderType}</span>
+
+                      <span className="text-gray-500 font-medium">Blouse Fabric:</span>
+                      <span className="text-gray-900">{currentSaree.blouseDetails}</span>
+
+                      <span className="text-gray-500 font-medium">Weight:</span>
+                      <span className="text-gray-900">{currentSaree.silkWeightGrams || 600}g</span>
+                    </div>
+                    <p className="pt-1.5 text-gray-600 border-t border-gray-100 leading-relaxed">
+                      {currentSaree.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Product Care */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion("care")}
+                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <span>Product Care</span>
+                  {openAccordion === "care" ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+                {openAccordion === "care" && (
+                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-1.5 text-xs">
+                    <p>• Strictly Dry Clean only to protect delicate mulberry silk and real zari.</p>
+                    <p>• Store in breathable cotton muslin bags, folded gently.</p>
+                    <p>• Avoid spraying perfume directly on pure zari borders.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Shipping and Delivery */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion("shipping")}
+                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <span>Shipping and Delivery</span>
+                  {openAccordion === "shipping" ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+                {openAccordion === "shipping" && (
+                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-1 text-xs">
+                    <p>• Dispatched directly from Dharmavaram within 24 hours.</p>
+                    <p>• Free Insured Doorstep Delivery across India within 2–4 business days.</p>
+                    <p>• Tamper-proof packaging with official CSB Silk Mark certificate.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Return Policies */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion("returns")}
+                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <span>Return Policies</span>
+                  {openAccordion === "returns" ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+                {openAccordion === "returns" && (
+                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 text-xs">
+                    <p>• 7-day hassle-free replacement or full refund if unworn and unstitched.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -518,17 +677,6 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
           </div>
         </div>
       )}
-
-      {/* Floating WhatsApp Quick Action Button */}
-      <a
-        href={whatsappUrl}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Chat on WhatsApp"
-        className="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-[#25D366] hover:bg-[#20BD5A] text-white shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
-      >
-        <MessageCircle className="w-7 h-7 fill-white" />
-      </a>
     </div>
   );
 }

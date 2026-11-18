@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ShoppingBag,
@@ -67,15 +67,17 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
     }
   }, [saree.sku, saree.id, saree.category]);
 
-  // Construct combined Media Carousel Items (Both Images and Videos)
+  // Construct combined Media Carousel Items (Authentic saree images + video only)
   const mediaSlides: MediaSlide[] = React.useMemo(() => {
     const slides: MediaSlide[] = [];
 
-    // 1. Saree Images
-    const imgs =
-      currentSaree.images && currentSaree.images.length > 0
-        ? currentSaree.images
-        : ["/images/sarees/pure-01.jpg"];
+    // 1. Saree Images (filter out any stock / unsplash photos)
+    const rawImages = currentSaree.images || [];
+    const validImages = rawImages.filter(
+      (img) => img && !img.includes("unsplash.com") && !img.includes("model-saree")
+    );
+    const imgs = validImages.length > 0 ? validImages : ["/images/sarees/pure-01.jpg"];
+
     imgs.forEach((img, idx) => {
       slides.push({
         id: `img-${idx}`,
@@ -122,7 +124,8 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
   const [addedToast, setAddedToast] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
-  // Accordion states (Image 3 reference)
+  // Toggle for Product Details (Accordions disabled/hidden by default for clean look)
+  const [showProductDetails, setShowProductDetails] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>("info");
 
   const toggleAccordion = (section: string) => {
@@ -453,16 +456,35 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               </button>
             </div>
 
-            {/* BUY NOW Button (Deep Maroon / Authentic Indian Handloom Style) */}
-            <div className="pt-1">
+            {/* BUY NOW Button + Product Details Toggle Button */}
+            <div className="pt-1 flex items-center gap-2.5">
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 px-6 rounded-lg bg-[#5C1624] hover:bg-[#460F1C] text-white font-semibold text-sm tracking-wide shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98"
+                className="flex-1 py-3.5 px-4 sm:px-6 rounded-lg bg-[#5C1624] hover:bg-[#460F1C] text-white font-semibold text-xs sm:text-sm tracking-wide shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98"
               >
+                <MessageCircle className="w-4 h-4 fill-white" />
                 <span>BUY NOW • ORDER ON WHATSAPP</span>
               </a>
+
+              {/* Product Details Button (Toggle for Accordions) */}
+              <button
+                type="button"
+                onClick={() => setShowProductDetails(!showProductDetails)}
+                className={`py-3.5 px-3.5 sm:px-4 rounded-lg border text-xs font-semibold tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-xs shrink-0 ${
+                  showProductDetails
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-800 border-gray-300 hover:border-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <span>Product Details</span>
+                {showProductDetails ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
+              </button>
             </div>
 
             {/* Notification Toasts */}
@@ -477,147 +499,152 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               </div>
             )}
 
-            {/* Got Questions? Chat with us (Image 3 Reference) */}
-            <div className="pt-4 border-t border-gray-200 mt-4 flex items-center justify-between text-xs text-gray-700">
-              <span className="font-medium">Got Questions?</span>
-              <a
-                href={`https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-semibold text-[#166534] hover:underline"
-              >
-                <MessageCircle className="w-4 h-4 fill-[#166534] text-[#166534]" />
-                <span>Chat with us</span>
-              </a>
-            </div>
+            {/* EXPANDABLE PRODUCT DETAILS SECTION (Enabled when user clicks the Product Details button) */}
+            {showProductDetails && (
+              <div className="pt-3 space-y-3 animate-fadeIn">
+                {/* Got Questions? Chat with us (Image 2 Reference) */}
+                <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-700">
+                  <span className="font-medium">Got Questions?</span>
+                  <a
+                    href={`https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 font-semibold text-[#166534] hover:underline"
+                  >
+                    <MessageCircle className="w-4 h-4 fill-[#166534] text-[#166534]" />
+                    <span>Chat with us</span>
+                  </a>
+                </div>
 
-            {/* Trust Badges (Image 3 Reference: Easy Payments • Easy Returns • COD) */}
-            <div className="grid grid-cols-3 gap-2 py-3 border-y border-gray-200 my-3 text-center">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-base">💳</span>
-                <span className="text-[11px] font-medium text-gray-800">Easy Payments</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-base">📦</span>
-                <span className="text-[11px] font-medium text-gray-800">Easy Returns</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-base">🏷️</span>
-                <span className="text-[11px] font-medium text-gray-800">Silk Mark Certified</span>
-              </div>
-            </div>
-
-            {/* Clean Collapsible Accordions (Image 3 Reference) */}
-            <div className="space-y-2 pt-1 font-sans text-xs">
-              {/* 1. Product Information */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion("info")}
-                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <span>Product Information</span>
-                  {openAccordion === "info" ? (
-                    <ChevronUp className="w-4 h-4 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  )}
-                </button>
-                {openAccordion === "info" && (
-                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-2 text-xs">
-                    <div className="grid grid-cols-2 gap-y-1.5 py-1">
-                      <span className="text-gray-500 font-medium">Fabric:</span>
-                      <span className="text-gray-900 font-semibold">{currentSaree.fabric}</span>
-
-                      <span className="text-gray-500 font-medium">Weave:</span>
-                      <span className="text-gray-900">Traditional Handloom Pit-Loom</span>
-
-                      <span className="text-gray-500 font-medium">Zari / Pattern:</span>
-                      <span className="text-gray-900">{currentSaree.zariType}</span>
-
-                      <span className="text-gray-500 font-medium">Border Type:</span>
-                      <span className="text-gray-900">{currentSaree.borderType}</span>
-
-                      <span className="text-gray-500 font-medium">Blouse Fabric:</span>
-                      <span className="text-gray-900">{currentSaree.blouseDetails}</span>
-
-                      <span className="text-gray-500 font-medium">Weight:</span>
-                      <span className="text-gray-900">{currentSaree.silkWeightGrams || 600}g</span>
-                    </div>
-                    <p className="pt-1.5 text-gray-600 border-t border-gray-100 leading-relaxed">
-                      {currentSaree.description}
-                    </p>
+                {/* Trust Badges (Image 2 Reference: Easy Payments • Easy Returns • COD) */}
+                <div className="grid grid-cols-3 gap-2 py-3 border-y border-gray-200 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-base">💳</span>
+                    <span className="text-[11px] font-medium text-gray-800">Easy Payments</span>
                   </div>
-                )}
-              </div>
-
-              {/* 2. Product Care */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion("care")}
-                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <span>Product Care</span>
-                  {openAccordion === "care" ? (
-                    <ChevronUp className="w-4 h-4 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  )}
-                </button>
-                {openAccordion === "care" && (
-                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-1.5 text-xs">
-                    <p>• Strictly Dry Clean only to protect delicate mulberry silk and real zari.</p>
-                    <p>• Store in breathable cotton muslin bags, folded gently.</p>
-                    <p>• Avoid spraying perfume directly on pure zari borders.</p>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-base">📦</span>
+                    <span className="text-[11px] font-medium text-gray-800">Easy Returns</span>
                   </div>
-                )}
-              </div>
-
-              {/* 3. Shipping and Delivery */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion("shipping")}
-                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <span>Shipping and Delivery</span>
-                  {openAccordion === "shipping" ? (
-                    <ChevronUp className="w-4 h-4 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  )}
-                </button>
-                {openAccordion === "shipping" && (
-                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-1 text-xs">
-                    <p>• Dispatched directly from Dharmavaram within 24 hours.</p>
-                    <p>• Free Insured Doorstep Delivery across India within 2–4 business days.</p>
-                    <p>• Tamper-proof packaging with official CSB Silk Mark certificate.</p>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-base">🏷️</span>
+                    <span className="text-[11px] font-medium text-gray-800">Silk Mark Certified</span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              {/* 4. Return Policies */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion("returns")}
-                  className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <span>Return Policies</span>
-                  {openAccordion === "returns" ? (
-                    <ChevronUp className="w-4 h-4 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  )}
-                </button>
-                {openAccordion === "returns" && (
-                  <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 text-xs">
-                    <p>• 7-day hassle-free replacement or full refund if unworn and unstitched.</p>
+                {/* Clean Collapsible Accordions (Image 2 Reference: Product Information, Care, Shipping, Returns) */}
+                <div className="space-y-2 font-sans text-xs">
+                  {/* 1. Product Information */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => toggleAccordion("info")}
+                      className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <span>Product Information</span>
+                      {openAccordion === "info" ? (
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                    {openAccordion === "info" && (
+                      <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-2 text-xs">
+                        <div className="grid grid-cols-2 gap-y-1.5 py-1">
+                          <span className="text-gray-500 font-medium">Fabric:</span>
+                          <span className="text-gray-900 font-semibold">{currentSaree.fabric}</span>
+
+                          <span className="text-gray-500 font-medium">Weave:</span>
+                          <span className="text-gray-900">Traditional Handloom Pit-Loom</span>
+
+                          <span className="text-gray-500 font-medium">Zari / Pattern:</span>
+                          <span className="text-gray-900">{currentSaree.zariType}</span>
+
+                          <span className="text-gray-500 font-medium">Border Type:</span>
+                          <span className="text-gray-900">{currentSaree.borderType}</span>
+
+                          <span className="text-gray-500 font-medium">Blouse Fabric:</span>
+                          <span className="text-gray-900">{currentSaree.blouseDetails}</span>
+
+                          <span className="text-gray-500 font-medium">Weight:</span>
+                          <span className="text-gray-900">{currentSaree.silkWeightGrams || 600}g</span>
+                        </div>
+                        <p className="pt-1.5 text-gray-600 border-t border-gray-100 leading-relaxed">
+                          {currentSaree.description}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* 2. Product Care */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => toggleAccordion("care")}
+                      className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <span>Product Care</span>
+                      {openAccordion === "care" ? (
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                    {openAccordion === "care" && (
+                      <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-1.5 text-xs">
+                        <p>• Strictly Dry Clean only to protect delicate mulberry silk and real zari.</p>
+                        <p>• Store in breathable cotton muslin bags, folded gently.</p>
+                        <p>• Avoid spraying perfume directly on pure zari borders.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3. Shipping and Delivery */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => toggleAccordion("shipping")}
+                      className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <span>Shipping and Delivery</span>
+                      {openAccordion === "shipping" ? (
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                    {openAccordion === "shipping" && (
+                      <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 space-y-1 text-xs">
+                        <p>• Dispatched directly from Dharmavaram within 24 hours.</p>
+                        <p>• Free Insured Doorstep Delivery across India within 2–4 business days.</p>
+                        <p>• Tamper-proof packaging with official CSB Silk Mark certificate.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. Return Policies */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => toggleAccordion("returns")}
+                      className="w-full px-4 py-3 text-left font-semibold text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <span>Return Policies</span>
+                      {openAccordion === "returns" ? (
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                    {openAccordion === "returns" && (
+                      <div className="px-4 pb-3.5 pt-1 border-t border-gray-100 text-gray-600 text-xs">
+                        <p>• 7-day hassle-free replacement or full refund if unworn and unstitched.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

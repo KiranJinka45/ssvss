@@ -73,7 +73,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 8,
     images: [
       "/images/sarees/semi-01.jpg",
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Lightweight 580g wrinkle-resistant festive drape",
@@ -111,7 +110,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 5,
     images: [
       "/images/sarees/semi-02.jpg",
-      "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Signature Ganga-Jamuna bi-color border styling",
@@ -149,7 +147,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 6,
     images: [
       "/images/sarees/semi-03.jpg",
-      "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Auspicious Haldi ceremony favorite SKU",
@@ -187,7 +184,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 2,
     images: [
       "/images/sarees/semi-04.jpg",
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Tissue gold pallu for royal reception look",
@@ -227,7 +223,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 4,
     images: [
       "/images/sarees/pure-01.jpg",
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Official Silk Mark India verification code attached",
@@ -265,7 +260,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 3,
     images: [
       "/images/sarees/pure-02.jpg",
-      "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Central Silk Board Silk Mark authenticity card included",
@@ -303,7 +297,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 4,
     images: [
       "/images/sarees/pure-03.jpg",
-      "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Over 400 micro-woven zari buttas across the entire body",
@@ -341,7 +334,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 1,
     images: [
       "/images/sarees/pure-04.jpg",
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Exclusive silver-dipped zari weave formulation",
@@ -381,7 +373,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 2,
     images: [
       "/images/sarees/handloom-01.jpg",
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Double-warp pure silk: substantial 840g heirloom weight",
@@ -419,7 +410,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 2,
     images: [
       "/images/sarees/handloom-02.jpg",
-      "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Kalpavriksha tree of life pallu: 20 days on pit-loom",
@@ -457,7 +447,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 1,
     images: [
       "/images/sarees/handloom-03.jpg",
-      "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Museum-grade Meenakari threadwork inlaid into zari",
@@ -495,7 +484,6 @@ export const CATALOG: SareeSKU[] = [
     stockCount: 0,
     images: [
       "/images/sarees/handloom-04.jpg",
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1000&q=80",
     ],
     highlights: [
       "Celestial gold tissue body with radiant natural shimmer",

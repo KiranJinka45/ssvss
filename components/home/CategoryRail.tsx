@@ -12,7 +12,7 @@ export function CategoryRail() {
       description: "High-velocity 580g wrinkle-resistant festive drapes with tested antique gold zari.",
       badge: "High-Velocity SKU",
       icon: Flame,
-      image: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80",
+      image: "/images/sarees/semi-01.jpg",
     },
     {
       title: "Pure Mulberry Silk",
@@ -22,7 +22,7 @@ export function CategoryRail() {
       description: "Central Silk Board Silk Mark certified 740g pure pit-loom weaves with Korvai temple borders.",
       badge: "Silk Mark Certified",
       icon: ShieldCheck,
-      image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+      image: "/images/sarees/pure-01.jpg",
     },
     {
       title: "Handloom Bridal Heirloom",
@@ -32,7 +32,7 @@ export function CategoryRail() {
       description: "Limited single-loom weaves (18-24 days on pit-loom) with heavy 3G pure gold zari.",
       badge: "Master Pit-Loom",
       icon: Sparkles,
-      image: "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=800&q=80",
+      image: "/images/sarees/handloom-01.jpg",
     },
     {
       title: "B2B Boutique Wholesale",
@@ -43,7 +43,7 @@ export function CategoryRail() {
       badge: "B2B Portal",
       icon: Building2,
       isWholesale: true,
-      image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=800&q=80",
+      image: "/images/sarees/pure-02.jpg",
     },
   ];
 

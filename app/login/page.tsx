@@ -236,9 +236,7 @@ export default function LoginPage() {
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-silk-emerald" /> 100% Silk Mark Authenticated
             </span>
-            <Link href="/admin" className="text-maroon/70 hover:text-maroon underline">
-              Weaver Admin
-            </Link>
+            <span className="text-loom-stone">Direct Master Pit-Looms</span>
           </div>
         </div>
 

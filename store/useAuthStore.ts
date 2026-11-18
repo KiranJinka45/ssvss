@@ -40,6 +40,9 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       loginAsCustomer: (data) => {
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("admin_auth");
+        }
         set({
           isLoggedIn: true,
           user: {
@@ -76,14 +79,18 @@ export const useAuthStore = create<AuthStore>()(
       syncFromStorage: () => {
         if (typeof window !== "undefined") {
           const adminAuth = sessionStorage.getItem("admin_auth") === "true";
-          if (adminAuth && (!get().isLoggedIn || get().user?.role !== "admin")) {
+          const currentUser = get().user;
+          // Only sync admin role if explicit admin session exists and user is not a customer
+          if (adminAuth && currentUser?.role === "admin") {
             set({
               isLoggedIn: true,
               user: {
-                name: "Loom Admin",
+                name: currentUser.name || "Loom Admin",
                 role: "admin",
               },
             });
+          } else if (currentUser?.role === "customer") {
+            sessionStorage.removeItem("admin_auth");
           }
         }
       },

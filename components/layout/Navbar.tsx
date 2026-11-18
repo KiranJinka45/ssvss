@@ -517,13 +517,15 @@ export function Navbar() {
               <Building2 className="w-4 h-4 text-gold" />
               B2B Boutique Wholesale Portal
             </Link>
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2 text-xs text-loom-stone hover:text-maroon flex items-center justify-center gap-1.5"
-            >
-              <Lock className="w-3.5 h-3.5" /> Founder / Weaver Admin Desk
-            </Link>
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2 text-xs text-loom-stone hover:text-maroon flex items-center justify-center gap-1.5"
+              >
+                <Lock className="w-3.5 h-3.5" /> Founder / Weaver Admin Desk
+              </Link>
+            )}
           </div>
         </div>
       )}

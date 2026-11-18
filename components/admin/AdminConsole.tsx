@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   Check,
   Package,
+  Home,
 } from "lucide-react";
 import { CATALOG, SareeSKU, SareeCategory, StockStatus } from "@/data/catalog";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -56,7 +57,7 @@ export function AdminConsole() {
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [videoUrlInput, setVideoUrlInput] = useState("");
 
-  const { isLoggedIn, loginAsAdmin, logout: storeLogout } = useAuthStore();
+  const { isLoggedIn, user, loginAsAdmin, logout: storeLogout } = useAuthStore();
 
   // Categories list
   const categoriesList = [
@@ -71,9 +72,11 @@ export function AdminConsole() {
   // Sync auth state and saved products on mount
   useEffect(() => {
     const auth = sessionStorage.getItem("admin_auth");
-    if (auth === "true" || isLoggedIn) {
+    // Admin dashboard is strictly for authorized admins with admin credentials
+    if (auth === "true" && user?.role === "admin") {
       setIsAuthenticated(true);
-      loginAsAdmin();
+    } else {
+      setIsAuthenticated(false);
     }
 
     // Load custom products and overrides from localStorage
@@ -371,12 +374,15 @@ export function AdminConsole() {
             <p className="text-xs tracking-widest text-[#D4AF37] uppercase font-semibold">
               SSVSS • Dharmavaram Silk Looms
             </p>
+            <p className="text-xs text-gray-400">
+              Founder & Store Administrator Authentication
+            </p>
           </div>
 
           <form onSubmit={handlePinSubmit} className="space-y-4">
             <div>
               <label className="block text-xs uppercase tracking-wider text-gray-400 font-bold mb-1.5">
-                Enter Security PIN
+                Enter Admin Security PIN
               </label>
               <input
                 type="password"
@@ -394,7 +400,7 @@ export function AdminConsole() {
 
             {pinError && (
               <p className="text-xs text-red-400 text-center font-medium">
-                Invalid Admin PIN. (Default: 2027)
+                Invalid Admin Credentials. Access restricted.
               </p>
             )}
 
@@ -500,21 +506,32 @@ export function AdminConsole() {
         {/* ======================================================== */}
         {activeTab === "dashboard" && (
           <div className="space-y-8 animate-fadeIn">
-            {/* Header + Add Product Button */}
+            {/* Header + Go to Home & Add Product Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="font-serif text-3xl font-bold text-[#F5EFE6]">Overview</h1>
                 <p className="text-xs text-gray-400 mt-1">Store performance and statistics</p>
               </div>
 
-              <button
-                type="button"
-                onClick={openAddProduct}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add New Product</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-[#F5EFE6] hover:text-[#E5B842] hover:border-[#E5B842]/50 font-semibold text-xs tracking-wider transition-all shadow-sm group"
+                  title="Return to Customer Storefront"
+                >
+                  <Home className="w-4 h-4 text-[#E5B842] group-hover:scale-110 transition-transform" />
+                  <span>Go to Home</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={openAddProduct}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Product</span>
+                </button>
+              </div>
             </div>
 
             {/* 4 Stat Cards in a row (Exact 1st Image Layout) */}
@@ -618,21 +635,32 @@ export function AdminConsole() {
         {/* ======================================================== */}
         {activeTab === "products" && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Header + Add Product Button */}
+            {/* Header + Go to Home & Add Product Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="font-serif text-3xl font-bold text-[#F5EFE6]">Products</h1>
                 <p className="text-xs text-gray-400 mt-1">Manage your saree collection</p>
               </div>
 
-              <button
-                type="button"
-                onClick={openAddProduct}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add New Product</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-[#F5EFE6] hover:text-[#E5B842] hover:border-[#E5B842]/50 font-semibold text-xs tracking-wider transition-all shadow-sm group"
+                  title="Return to Customer Storefront"
+                >
+                  <Home className="w-4 h-4 text-[#E5B842] group-hover:scale-110 transition-transform" />
+                  <span>Go to Home</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={openAddProduct}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-98"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Product</span>
+                </button>
+              </div>
             </div>
 
             {/* Products Table (Exact 4th Image Layout) */}
@@ -1069,11 +1097,20 @@ export function AdminConsole() {
         {/* ======================================================== */}
         {activeTab === "categories" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="font-serif text-3xl font-bold text-[#F5EFE6]">Categories</h1>
                 <p className="text-xs text-gray-400 mt-1">Manage saree weave categories and collections</p>
               </div>
+
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-[#F5EFE6] hover:text-[#E5B842] hover:border-[#E5B842]/50 font-semibold text-xs tracking-wider transition-all shadow-sm group w-fit"
+                title="Return to Customer Storefront"
+              >
+                <Home className="w-4 h-4 text-[#E5B842] group-hover:scale-110 transition-transform" />
+                <span>Go to Home</span>
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

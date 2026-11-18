@@ -125,11 +125,6 @@ export function Footer() {
                 Wholesale Catalog
               </Link>
             </li>
-            <li>
-              <Link href="/admin" className="hover:text-maroon transition-colors text-xs text-loom-charcoal/60">
-                Merchant Admin Login
-              </Link>
-            </li>
           </ul>
         </div>
 

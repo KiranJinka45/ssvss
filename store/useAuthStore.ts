@@ -15,6 +15,7 @@ interface AuthStore {
   user: UserProfile | null;
   loginAsAdmin: () => void;
   loginAsCustomer: (data: { name: string; email?: string; phone?: string }) => void;
+  updateProfile: (data: Partial<UserProfile>) => void;
   logout: () => void;
   syncFromStorage: () => void;
 }
@@ -46,6 +47,17 @@ export const useAuthStore = create<AuthStore>()(
             email: data.email,
             phone: data.phone,
             role: "customer",
+          },
+        });
+      },
+
+      updateProfile: (data) => {
+        const currentUser = get().user;
+        if (!currentUser) return;
+        set({
+          user: {
+            ...currentUser,
+            ...data,
           },
         });
       },

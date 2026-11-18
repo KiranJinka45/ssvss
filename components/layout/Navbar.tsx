@@ -101,10 +101,11 @@ export function Navbar() {
   }
 
   const navLinks: { label: string; href: string; badge?: string }[] = [
-    { label: "Pure Mulberry Silk", href: "/collections/pure-silk" },
-    { label: "Semi-Silk Festive", href: "/collections/semi-silk" },
-    { label: "Bridal Heirloom", href: "/collections/handloom-bridal" },
-    { label: "All Sarees", href: "/collections/all" },
+    { label: "Home", href: "/" },
+    { label: "Bridal", href: "/collections/handloom-bridal" },
+    { label: "Products", href: "/collections/all" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ];
 
   return (

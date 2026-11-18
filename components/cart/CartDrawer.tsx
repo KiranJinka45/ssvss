@@ -23,6 +23,9 @@ import { MERCHANT_CONFIG } from "@/lib/config";
 
 export function CartDrawer() {
   const pathname = usePathname();
+  const [customerName, setCustomerName] = useState("");
+  const [city, setCity] = useState("");
+
   const {
     items,
     isCartOpen,
@@ -38,14 +41,10 @@ export function CartDrawer() {
     isB2BMode,
   } = useCartStore();
 
-  if (pathname?.startsWith("/admin")) {
+  // Rules of Hooks: Do not return before hooks are initialized
+  if (pathname?.startsWith("/admin") || !isCartOpen) {
     return null;
   }
-
-  const [customerName, setCustomerName] = useState("");
-  const [city, setCity] = useState("");
-
-  if (!isCartOpen) return null;
 
   const totalCount = getTotalItemsCount();
   const subtotal = getSubtotal();

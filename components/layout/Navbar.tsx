@@ -17,6 +17,10 @@ import {
   User,
   LogOut,
   Edit3,
+  Check,
+  Phone,
+  Mail,
+  ChevronRight,
 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -43,6 +47,7 @@ export function Navbar() {
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editEmail, setEditEmail] = useState("");
@@ -79,6 +84,8 @@ export function Navbar() {
       email: editEmail.trim(),
     });
     setIsEditingProfile(false);
+    setUpdateSuccess(true);
+    setTimeout(() => setUpdateSuccess(false), 2500);
   };
 
   useEffect(() => {
@@ -225,30 +232,39 @@ export function Navbar() {
                   setProfileDropdownOpen(!profileDropdownOpen);
                   setIsEditingProfile(false);
                 }}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-gold/70 bg-[#24060E] hover:bg-maroon text-gold flex items-center justify-center transition-all shadow-md hover:scale-105 active:scale-95"
-                title={`Profile: ${user?.name || "Customer"}`}
+                className={`relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-all flex items-center justify-center shadow-md active:scale-95 ${
+                  profileDropdownOpen
+                    ? "border-maroon bg-maroon text-gold-300 ring-2 ring-gold/40 shadow-lg"
+                    : "border-gold/70 bg-gradient-to-br from-[#3D0A14] to-[#20040A] hover:border-gold text-gold hover:shadow-[0_4px_14px_rgba(212,175,55,0.35)]"
+                }`}
+                title={`Account: ${user?.name || "Patron"}`}
                 aria-label="User Profile"
               >
-                <span className="text-xs sm:text-sm font-bold uppercase tracking-wider">
-                  {user?.name ? user.name.trim().charAt(0) : <User className="w-4 h-4" />}
+                <span className="font-serif text-sm sm:text-base font-bold uppercase tracking-wider">
+                  {user?.name ? user.name.trim().charAt(0) : "U"}
                 </span>
+                {/* Active indicator dot */}
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white shadow-xs" />
               </button>
 
-              {/* Profile Dropdown Menu */}
+              {/* Profile Dropdown Menu - Simple, Dynamic, Silk Luxury */}
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-[#121216] border border-white/15 text-[#F5EFE6] shadow-2xl p-5 z-50 animate-fadeIn space-y-4">
-                  {/* Dropdown Header */}
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="absolute right-0 mt-3 w-80 sm:w-88 rounded-2xl bg-[#FCFAF6] border border-gold-600/30 text-loom-charcoal shadow-[0_20px_50px_rgba(74,14,23,0.18)] p-5 z-50 animate-fadeIn space-y-4">
+                  {/* Header: Monogram, Dynamic Greeting, Role & Edit Toggle */}
+                  <div className="flex items-start justify-between pb-3.5 border-b border-loom-border/60">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#E5B842]/20 border border-[#E5B842]/40 text-[#E5B842] flex items-center justify-center font-bold text-base uppercase">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-maroon to-[#24060E] border border-gold/50 text-gold-300 flex items-center justify-center font-serif font-bold text-lg uppercase shadow-sm shrink-0">
                         {user?.name ? user.name.trim().charAt(0) : "U"}
                       </div>
                       <div className="max-w-[170px]">
-                        <h4 className="font-serif font-bold text-sm text-[#F5EFE6] leading-tight truncate">
-                          {user?.name || "Valued Customer"}
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-gold-700 block">
+                          Namaste,
+                        </span>
+                        <h4 className="font-serif font-bold text-base text-maroon leading-tight truncate">
+                          {user?.name || "Valued Patron"}
                         </h4>
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-[#D4AF37]">
-                          {user?.role === "admin" ? "Master Artisan Admin" : "Verified Customer"}
+                        <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-gold-100 text-maroon border border-gold-300">
+                          {user?.role === "admin" ? "Master Artisan Admin" : "Silk Heritage Member"}
                         </span>
                       </div>
                     </div>
@@ -262,44 +278,90 @@ export function Navbar() {
                           setIsEditingProfile(false);
                         }
                       }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-[#E5B842] hover:bg-white/5 transition-colors"
+                      className="p-1.5 rounded-lg text-loom-stone hover:text-maroon hover:bg-gold-50/80 transition-colors border border-transparent hover:border-gold/30"
                       title={isEditingProfile ? "Cancel Editing" : "Edit Profile"}
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  {/* Profile Edit Mode or Profile Details View */}
+                  {/* Dynamic update feedback */}
+                  {updateSuccess && (
+                    <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium animate-fadeIn">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Profile details updated successfully!</span>
+                    </div>
+                  )}
+
+                  {/* Dynamic Interactive Stats (Live Wishlist & Live Cart Shortcuts) */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <Link
+                      href="/collections/all"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="p-2.5 rounded-xl bg-white border border-loom-border/60 hover:border-gold hover:bg-gold-50/30 transition-all flex items-center gap-2.5 group"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-maroon/5 group-hover:bg-maroon/10 text-maroon flex items-center justify-center shrink-0">
+                        <Heart className="w-3.5 h-3.5 text-maroon" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-loom-stone block">Saved Sarees</span>
+                        <span className="font-bold text-maroon font-serif text-sm">
+                          {wishlistSkus.length} Items
+                        </span>
+                      </div>
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        openCart();
+                      }}
+                      className="p-2.5 rounded-xl bg-white border border-loom-border/60 hover:border-gold hover:bg-gold-50/30 transition-all flex items-center gap-2.5 text-left group"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-maroon/5 group-hover:bg-maroon/10 text-maroon flex items-center justify-center shrink-0">
+                        <ShoppingBag className="w-3.5 h-3.5 text-maroon" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-loom-stone block">Shopping Bag</span>
+                        <span className="font-bold text-maroon font-serif text-sm">
+                          {totalCartCount} Sarees
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Profile Edit Form OR Elegant Details View */}
                   {isEditingProfile ? (
                     <form onSubmit={handleSaveProfile} className="space-y-3 pt-1">
                       <div>
-                        <label className="block text-[10px] uppercase font-bold tracking-wider text-[#D4AF37] mb-1">
+                        <label className="block text-[10px] uppercase font-bold tracking-wider text-loom-stone mb-1">
                           Full Name
                         </label>
                         <input
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full py-2 px-3 rounded-xl bg-[#18181F] border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                          className="w-full py-2 px-3 rounded-xl bg-white border border-loom-border text-xs text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] uppercase font-bold tracking-wider text-[#D4AF37] mb-1">
-                          Phone Number (WhatsApp)
+                        <label className="block text-[10px] uppercase font-bold tracking-wider text-loom-stone mb-1">
+                          WhatsApp Phone Number
                         </label>
                         <input
                           type="tel"
                           value={editPhone}
                           onChange={(e) => setEditPhone(e.target.value)}
                           placeholder="+91 98765 43210"
-                          className="w-full py-2 px-3 rounded-xl bg-[#18181F] border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                          className="w-full py-2 px-3 rounded-xl bg-white border border-loom-border text-xs text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] uppercase font-bold tracking-wider text-[#D4AF37] mb-1">
+                        <label className="block text-[10px] uppercase font-bold tracking-wider text-loom-stone mb-1">
                           Email Address
                         </label>
                         <input
@@ -307,21 +369,21 @@ export function Navbar() {
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
                           placeholder="kiran@example.com"
-                          className="w-full py-2 px-3 rounded-xl bg-[#18181F] border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                          className="w-full py-2 px-3 rounded-xl bg-white border border-loom-border text-xs text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
                         />
                       </div>
 
                       <div className="flex gap-2 pt-1">
                         <button
                           type="submit"
-                          className="flex-1 py-2 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-wider transition-all"
+                          className="flex-1 py-2 rounded-xl bg-maroon hover:bg-maroon-700 text-canvas font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-98"
                         >
                           Save Changes
                         </button>
                         <button
                           type="button"
                           onClick={() => setIsEditingProfile(false)}
-                          className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-gray-300"
+                          className="px-3 py-2 rounded-xl bg-loom-surface hover:bg-loom-border/50 text-xs text-loom-charcoal font-medium"
                         >
                           Cancel
                         </button>
@@ -330,52 +392,49 @@ export function Navbar() {
                   ) : (
                     <div className="space-y-2 text-xs">
                       {user?.phone ? (
-                        <div className="flex items-center justify-between py-1 text-gray-300">
-                          <span className="text-gray-400">Phone:</span>
-                          <span className="font-medium text-[#E5B842]">{user.phone}</span>
+                        <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-white/70 border border-loom-border/40">
+                          <span className="text-loom-stone flex items-center gap-1.5">
+                            <Phone className="w-3 h-3 text-gold-700" />
+                            <span>Phone:</span>
+                          </span>
+                          <span className="font-semibold text-maroon">{user.phone}</span>
                         </div>
                       ) : (
-                        <p className="text-[11px] text-gray-400 italic">No phone added yet. Click ✏️ to update.</p>
+                        <p className="text-[11px] text-loom-stone italic px-1">
+                          No phone number linked. Click ✏️ to add WhatsApp contact.
+                        </p>
                       )}
 
                       {user?.email && (
-                        <div className="flex items-center justify-between py-1 text-gray-300">
-                          <span className="text-gray-400">Email:</span>
-                          <span className="font-medium text-gray-300 truncate max-w-[160px]">{user.email}</span>
+                        <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-white/70 border border-loom-border/40">
+                          <span className="text-loom-stone flex items-center gap-1.5">
+                            <Mail className="w-3 h-3 text-gold-700" />
+                            <span>Email:</span>
+                          </span>
+                          <span className="font-medium text-loom-charcoal truncate max-w-[170px]">
+                            {user.email}
+                          </span>
                         </div>
                       )}
 
-                      <div className="pt-2 border-t border-white/10 space-y-1">
+                      {user?.role === "admin" && (
                         <Link
-                          href="/collections/all"
+                          href="/admin"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 text-gray-300 hover:text-white transition-colors"
+                          className="mt-2 flex items-center justify-between p-2.5 rounded-xl bg-[#24060E] text-gold hover:bg-maroon hover:text-white transition-all shadow-sm font-semibold"
                         >
                           <span className="flex items-center gap-2">
-                            <Heart className="w-3.5 h-3.5 text-gold" />
-                            <span>Saved Sarees</span>
+                            <ShieldCheck className="w-4 h-4 text-gold-400" />
+                            <span>Open Admin Console</span>
                           </span>
-                          <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full">
-                            {wishlistSkus.length}
-                          </span>
+                          <ChevronRight className="w-4 h-4 text-gold-400" />
                         </Link>
-
-                        {user?.role === "admin" && (
-                          <Link
-                            href="/admin"
-                            onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#E5B842]/10 text-[#E5B842] transition-colors font-medium"
-                          >
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>Admin Console</span>
-                          </Link>
-                        )}
-                      </div>
+                      )}
                     </div>
                   )}
 
-                  {/* Log Out Button */}
-                  <div className="pt-3 border-t border-white/10">
+                  {/* Refined Simple Log Out Button */}
+                  <div className="pt-2 border-t border-loom-border/60">
                     <button
                       type="button"
                       onClick={() => {
@@ -383,7 +442,7 @@ export function Navbar() {
                         setProfileDropdownOpen(false);
                         setIsEditingProfile(false);
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-500/30 bg-red-950/30 hover:bg-red-900/50 text-red-300 text-xs font-semibold tracking-wider uppercase transition-all"
+                      className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-loom-border hover:border-red-300 hover:bg-red-50 text-loom-stone hover:text-red-700 text-xs font-semibold tracking-wider uppercase transition-all"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>Log Out</span>

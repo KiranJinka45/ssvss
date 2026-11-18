@@ -189,7 +189,7 @@ export function Navbar() {
             title="Wishlist"
           >
             <Heart className="w-5 h-5" />
-            {wishlistSkus.length > 0 && (
+            {mounted && wishlistSkus.length > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-maroon text-canvas text-[10px] font-bold flex items-center justify-center">
                 {wishlistSkus.length}
               </span>
@@ -204,7 +204,7 @@ export function Navbar() {
           >
             <ShoppingBag className="w-4 h-4 text-gold-400" />
             <span className="text-xs font-semibold tracking-wider">CART</span>
-            {totalCartCount > 0 && (
+            {mounted && totalCartCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-gold text-maroon-900 text-[11px] font-bold flex items-center justify-center shadow-sm">
                 {totalCartCount}
               </span>

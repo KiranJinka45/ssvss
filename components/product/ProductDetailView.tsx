@@ -13,7 +13,6 @@ import {
   Maximize2,
   X,
   Play,
-  Video as VideoIcon,
   Heart,
   Share2,
 } from "lucide-react";
@@ -33,8 +32,25 @@ interface MediaSlide {
   title?: string;
 }
 
+// Helper to guarantee authentic local saree images and prevent any stock/model photos
+function getValidSareeImage(item: SareeSKU): string {
+  if (item.images && item.images.length > 0) {
+    const valid = item.images.find(
+      (img) =>
+        img &&
+        !img.includes("unsplash.com") &&
+        !img.includes("model-saree") &&
+        !img.includes("collage")
+    );
+    if (valid) return valid;
+  }
+  if (item.category === "semi-silk") return "/images/sarees/semi-01.jpg";
+  if (item.category === "handloom-bridal") return "/images/sarees/handloom-01.jpg";
+  return "/images/sarees/pure-01.jpg";
+}
+
 export function ProductDetailView({ saree, similarSarees }: ProductDetailViewProps) {
-  // Sync with localStorage for custom products added via Admin Console
+  // Sync with localStorage for custom products added via Admin Console (sanitized)
   const [currentSaree, setCurrentSaree] = useState<SareeSKU>(saree);
   const [relatedItems, setRelatedItems] = useState<SareeSKU[]>(similarSarees);
 
@@ -42,7 +58,30 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
     try {
       const savedCustom = localStorage.getItem("loom_custom_products");
       if (savedCustom) {
-        const customProducts = JSON.parse(savedCustom) as SareeSKU[];
+        let customProducts = JSON.parse(savedCustom) as SareeSKU[];
+        // Sanitize out any model or unsplash images from local storage
+        let modified = false;
+        customProducts = customProducts.map((p) => {
+          const filtered = p.images?.filter(
+            (img) =>
+              img &&
+              !img.includes("unsplash.com") &&
+              !img.includes("model-saree") &&
+              !img.includes("collage")
+          );
+          if (filtered && filtered.length !== p.images.length) {
+            modified = true;
+          }
+          return {
+            ...p,
+            images: filtered && filtered.length > 0 ? filtered : ["/images/sarees/pure-01.jpg"],
+          };
+        });
+
+        if (modified) {
+          localStorage.setItem("loom_custom_products", JSON.stringify(customProducts));
+        }
+
         const found = customProducts.find(
           (p) => p.sku.toLowerCase() === saree.sku.toLowerCase() || p.id === saree.id
         );
@@ -67,27 +106,20 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
     }
   }, [saree.sku, saree.id, saree.category]);
 
-  // Construct combined Media Carousel Items (Authentic saree images + video only)
+  // Construct Media Carousel Items (Authentic single saree image + optional loom video, no side images)
   const mediaSlides: MediaSlide[] = React.useMemo(() => {
     const slides: MediaSlide[] = [];
 
-    // 1. Saree Images (filter out any stock / unsplash photos)
-    const rawImages = currentSaree.images || [];
-    const validImages = rawImages.filter(
-      (img) => img && !img.includes("unsplash.com") && !img.includes("model-saree")
-    );
-    const imgs = validImages.length > 0 ? validImages : ["/images/sarees/pure-01.jpg"];
-
-    imgs.forEach((img, idx) => {
-      slides.push({
-        id: `img-${idx}`,
-        type: "image",
-        url: img,
-        title: `${currentSaree.title} - View ${idx + 1}`,
-      });
+    // 1. Saree Authentic Image (single clean hero photo)
+    const validImg = getValidSareeImage(currentSaree);
+    slides.push({
+      id: "saree-photo",
+      type: "image",
+      url: validImg,
+      title: currentSaree.title,
     });
 
-    // 2. Saree Videos
+    // 2. Saree Loom Video (if custom video added, or default loom demo)
     const vids: string[] = [];
     if (currentSaree.videos && Array.isArray(currentSaree.videos)) {
       currentSaree.videos.forEach((v) => {
@@ -101,7 +133,6 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
       vids.push(currentSaree.reelVideoPlaceholderUrl);
     }
 
-    // Default sample demonstration video if none added
     if (vids.length === 0) {
       vids.push("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4");
     }
@@ -111,7 +142,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
         id: `vid-${idx}`,
         type: "video",
         url: vid,
-        title: `${currentSaree.title} - Loom Video ${idx + 1}`,
+        title: `${currentSaree.title} - Loom Video`,
       });
     });
 
@@ -133,10 +164,16 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
   };
 
   const { addItem, toggleWishlist, isInWishlist } = useCartStore();
-  const isWishlisted = isInWishlist(currentSaree.sku);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isWishlisted = mounted ? isInWishlist(currentSaree.sku) : false;
 
   const currentIndex = activeSlideIndex >= mediaSlides.length ? 0 : activeSlideIndex;
   const currentSlide = mediaSlides[currentIndex] || mediaSlides[0];
+  const hasVideo = mediaSlides.some((s) => s.type === "video");
 
   const incrementQty = () =>
     setQuantity((prev) => Math.min(prev + 1, currentSaree.stockCount || 10));
@@ -190,7 +227,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1A1A1A] font-sans pt-3 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb Navigation (Exact Valli Silks Reference) */}
+        {/* Breadcrumb Navigation (Clean & Minimal) */}
         <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-5 font-sans">
           <Link href="/" className="hover:text-[#5C1624] transition-colors">
             Home
@@ -210,44 +247,10 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
 
         {/* Main 2-Column Product Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* LEFT COLUMN: Media Gallery (Vertical Thumbnails + Main Display) */}
-          <div className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-3.5 sm:gap-4 items-start">
-            {/* Vertical Thumbnails List (Left Side) */}
-            {mediaSlides.length > 1 && (
-              <div className="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto no-scrollbar shrink-0 w-full sm:w-20 max-h-[500px]">
-                {mediaSlides.map((slide, idx) => (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    onClick={() => setActiveSlideIndex(idx)}
-                    className={`relative w-16 sm:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
-                      idx === currentIndex
-                        ? "border-[#5C1624] ring-2 ring-[#5C1624]/20 shadow-sm"
-                        : "border-gray-200 hover:border-gray-400 opacity-70 hover:opacity-100"
-                    }`}
-                  >
-                    {slide.type === "video" ? (
-                      <div className="w-full h-full bg-[#18181B] flex flex-col items-center justify-center text-white">
-                        <Play className="w-5 h-5 text-[#C59B27] fill-[#C59B27]" />
-                        <span className="text-[9px] font-bold tracking-tight text-white/90 mt-1">
-                          VIDEO
-                        </span>
-                      </div>
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={slide.url}
-                        alt={`Thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Large Main Media Display (Right of Thumbnails) */}
-            <div className="relative flex-1 w-full rounded-2xl overflow-hidden bg-white border border-gray-200/90 shadow-sm group aspect-[3/4] max-h-[500px] flex items-center justify-center">
+          {/* LEFT COLUMN: Clean Large Showcase (NO Thumbnails On The Left Side) */}
+          <div className="lg:col-span-7 w-full">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-white border border-gray-200/90 shadow-sm group aspect-[3/4] max-h-[520px] flex items-center justify-center">
+              {/* Media Content: Photo or Video */}
               {currentSlide?.type === "video" ? (
                 <div className="w-full h-full bg-black flex items-center justify-center">
                   <video
@@ -260,10 +263,6 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                     loop
                     className="w-full h-full object-contain"
                   />
-                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md text-amber-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow">
-                    <VideoIcon className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Loom Video</span>
-                  </div>
                 </div>
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -274,24 +273,53 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                 />
               )}
 
-              {/* Fullscreen Expand Button (Matching Valli Silks ⛶) */}
+              {/* Top-Left Toggle Pill: Photo vs Loom Video (Zero left side images needed!) */}
+              {hasVideo && (
+                <div className="absolute top-3 left-3 z-10 flex items-center p-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 shadow-md">
+                  <button
+                    type="button"
+                    onClick={() => setActiveSlideIndex(0)}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                      currentIndex === 0
+                        ? "bg-white text-gray-950 shadow-xs"
+                        : "text-white/80 hover:text-white"
+                    }`}
+                  >
+                    Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSlideIndex(1)}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                      currentIndex === 1
+                        ? "bg-[#C59B27] text-white shadow-xs"
+                        : "text-white/80 hover:text-white"
+                    }`}
+                  >
+                    <Play className="w-3 h-3 fill-current" />
+                    <span>Loom Video</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Fullscreen Expand Button (Top Right ⛶) */}
               <button
                 type="button"
                 onClick={() => setIsFullscreen(true)}
                 aria-label="Expand image"
-                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-black flex items-center justify-center shadow-md transition-all border border-gray-100"
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-black flex items-center justify-center shadow-md transition-all border border-gray-100 z-10"
               >
                 <Maximize2 className="w-4 h-4" />
               </button>
 
-              {/* Prev / Next Carousel Arrow Buttons (Shown on Hover) */}
+              {/* Prev / Next Carousel Arrow Buttons (Shown on Hover if multi-media) */}
               {mediaSlides.length > 1 && (
                 <>
                   <button
                     type="button"
                     onClick={handlePrevSlide}
                     aria-label="Previous slide"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100 z-10"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -299,7 +327,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                     type="button"
                     onClick={handleNextSlide}
                     aria-label="Next slide"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100 z-10"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -317,7 +345,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               </h1>
             </div>
 
-            {/* Price & Taxes Note (Exact Reference) */}
+            {/* Price & Taxes Note */}
             <div className="pt-0.5">
               <div className="flex items-baseline gap-3">
                 <span className="text-2xl sm:text-3xl font-bold text-gray-950">
@@ -332,7 +360,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               <p className="text-xs text-gray-500 mt-1">Inclusive of all taxes.</p>
             </div>
 
-            {/* Trust Highlights (Unique • Premium • Quality) */}
+            {/* Trust Highlights (Unique • Premium • Silk Mark Quality) */}
             <div className="flex items-center gap-4 text-xs text-gray-700 font-medium pt-1">
               <span className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-gray-900" />
@@ -354,7 +382,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
               <span>{currentSaree.sku}</span>
             </div>
 
-            {/* MORE COLORS Swatches (Exact Valli Silks Image 1 Reference) */}
+            {/* MORE COLORS Swatches (Authentic local saree images only) */}
             <div className="pt-2 space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-gray-900 block">
                 MORE COLORS
@@ -365,13 +393,13 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                   <div className="aspect-[4/5] rounded overflow-hidden bg-gray-100 mb-1">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={currentSaree.images[0]}
+                      src={getValidSareeImage(currentSaree)}
                       alt={currentSaree.title}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <p className="text-[10px] text-gray-900 font-medium truncate text-center">
-                    {currentSaree.colorName.split(" ")[0]}
+                    {currentSaree.colorName ? currentSaree.colorName.split(" ")[0] : "Dark"}
                   </p>
                 </div>
 
@@ -385,13 +413,13 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                     <div className="aspect-[4/5] rounded overflow-hidden bg-gray-100 mb-1">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={item.images[0]}
+                        src={getValidSareeImage(item)}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <p className="text-[10px] text-gray-700 font-medium truncate text-center">
-                      {item.colorName.split(" ")[0]}
+                      {item.colorName ? item.colorName.split(" ")[0] : item.title.split(" ")[0]}
                     </p>
                   </Link>
                 ))}
@@ -468,7 +496,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                 <span>BUY NOW • ORDER ON WHATSAPP</span>
               </a>
 
-              {/* Product Details Button (Toggle for Accordions) */}
+              {/* Product Details Button (Toggles Accordions) */}
               <button
                 type="button"
                 onClick={() => setShowProductDetails(!showProductDetails)}
@@ -502,7 +530,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
             {/* EXPANDABLE PRODUCT DETAILS SECTION (Enabled when user clicks the Product Details button) */}
             {showProductDetails && (
               <div className="pt-3 space-y-3 animate-fadeIn">
-                {/* Got Questions? Chat with us (Image 2 Reference) */}
+                {/* Got Questions? Chat with us */}
                 <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-700">
                   <span className="font-medium">Got Questions?</span>
                   <a
@@ -516,7 +544,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                   </a>
                 </div>
 
-                {/* Trust Badges (Image 2 Reference: Easy Payments • Easy Returns • COD) */}
+                {/* Trust Badges */}
                 <div className="grid grid-cols-3 gap-2 py-3 border-y border-gray-200 text-center">
                   <div className="flex flex-col items-center gap-1">
                     <span className="text-base">💳</span>
@@ -532,7 +560,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                   </div>
                 </div>
 
-                {/* Clean Collapsible Accordions (Image 2 Reference: Product Information, Care, Shipping, Returns) */}
+                {/* Clean Collapsible Accordions (Image 2 Reference) */}
                 <div className="space-y-2 font-sans text-xs">
                   {/* 1. Product Information */}
                   <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-xs">

@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Heart, ShieldCheck, Sparkles, MessageCircle, Eye } from "lucide-react";
+import { Heart, ShieldCheck, Sparkles, MessageCircle, Eye, Check } from "lucide-react";
 import { SareeSKU } from "@/data/catalog";
 import { formatINR } from "@/lib/pricing";
 import { generateOrderWhatsAppUrl } from "@/lib/whatsapp";
@@ -13,6 +13,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ saree }: ProductCardProps) {
+  const [isAdded, setIsAdded] = useState(false);
   const { isInWishlist, toggleWishlist, addItem } = useCartStore();
   const wishlisted = isInWishlist(saree.sku);
 
@@ -131,11 +132,27 @@ export function ProductCard({ saree }: ProductCardProps) {
           {/* Action CTAs */}
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
-              onClick={() => addItem(saree)}
+              onClick={(e) => {
+                e.preventDefault();
+                addItem(saree, "Standard Unstitched Blouse", false);
+                setIsAdded(true);
+                setTimeout(() => setIsAdded(false), 2000);
+              }}
               disabled={isSoldOut}
-              className="w-full py-2 px-2.5 rounded-lg border border-maroon text-maroon hover:bg-maroon hover:text-canvas transition-colors text-xs font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full py-2 px-2.5 rounded-lg border transition-all text-xs font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-98 ${
+                isAdded
+                  ? "bg-emerald-700 border-emerald-700 text-white"
+                  : "border-maroon text-maroon hover:bg-maroon hover:text-canvas"
+              }`}
             >
-              Add to Bag
+              {isAdded ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-white" />
+                  <span>Added ✓</span>
+                </>
+              ) : (
+                <span>Add to Bag</span>
+              )}
             </button>
 
             <a

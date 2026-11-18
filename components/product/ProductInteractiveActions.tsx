@@ -45,7 +45,7 @@ export function ProductInteractiveActions({ saree }: ProductInteractiveActionsPr
   const isSoldOut = saree.stockStatus === "SOLD_OUT";
 
   const handleAddToCart = () => {
-    addItem(saree, selectedFinish);
+    addItem(saree, selectedFinish, false);
   };
 
   return (

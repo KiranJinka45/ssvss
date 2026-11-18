@@ -256,16 +256,10 @@ export function Navbar() {
                       <div className="w-11 h-11 rounded-full bg-gradient-to-br from-maroon to-[#24060E] border border-gold/50 text-gold-300 flex items-center justify-center font-serif font-bold text-lg uppercase shadow-sm shrink-0">
                         {user?.name ? user.name.trim().charAt(0) : "U"}
                       </div>
-                      <div className="max-w-[170px]">
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-gold-700 block">
-                          Namaste,
-                        </span>
+                      <div className="max-w-[180px]">
                         <h4 className="font-serif font-bold text-base text-maroon leading-tight truncate">
                           {user?.name || "Valued Patron"}
                         </h4>
-                        <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-gold-100 text-maroon border border-gold-300">
-                          {user?.role === "admin" ? "Master Artisan Admin" : "Silk Heritage Member"}
-                        </span>
                       </div>
                     </div>
 

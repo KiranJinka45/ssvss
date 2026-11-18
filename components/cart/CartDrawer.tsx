@@ -124,16 +124,7 @@ export function CartDrawer() {
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Link
-                href="/login"
-                onClick={closeCart}
-                className="text-xs font-semibold text-maroon hover:text-gold-700 transition-colors flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold-600/50 bg-white"
-              >
-                <User className="w-3.5 h-3.5 text-gold-600" />
-                <span>Sign In</span>
-              </Link>
-
+            <div className="flex items-center gap-2">
               <button
                 onClick={closeCart}
                 className="p-1.5 text-loom-stone hover:text-maroon rounded-full hover:bg-canvas transition-colors"

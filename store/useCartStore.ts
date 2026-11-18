@@ -22,7 +22,7 @@ interface CartStore {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  addItem: (saree: SareeSKU, finishOption?: CartItem["finishOption"]) => void;
+  addItem: (saree: SareeSKU, finishOption?: CartItem["finishOption"], openDrawer?: boolean) => void;
   removeItem: (sku: string) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   updateFinish: (sku: string, finishOption: CartItem["finishOption"]) => void;
@@ -64,7 +64,7 @@ export const useCartStore = create<CartStore>()(
 
       setB2BMode: (enabled) => set({ isB2BMode: enabled }),
 
-      addItem: (saree, finishOption = "Standard Unstitched Blouse") => {
+      addItem: (saree, finishOption = "Standard Unstitched Blouse", openDrawer = false) => {
         set((state) => {
           const existingIndex = state.items.findIndex(
             (i) => i.saree.sku === saree.sku && i.finishOption === finishOption
@@ -73,7 +73,7 @@ export const useCartStore = create<CartStore>()(
           if (existingIndex > -1) {
             const updated = [...state.items];
             updated[existingIndex].quantity += 1;
-            return { items: updated, isCartOpen: true };
+            return { items: updated, isCartOpen: openDrawer ? true : state.isCartOpen };
           }
 
           return {
@@ -86,7 +86,7 @@ export const useCartStore = create<CartStore>()(
                 finishCost: FINISH_COSTS[finishOption],
               },
             ],
-            isCartOpen: true,
+            isCartOpen: openDrawer ? true : state.isCartOpen,
           };
         });
       },

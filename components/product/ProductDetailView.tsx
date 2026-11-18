@@ -37,7 +37,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addItem(saree, "Standard Unstitched Blouse");
+      addItem(saree, "Standard Unstitched Blouse", false);
     }
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 3000);

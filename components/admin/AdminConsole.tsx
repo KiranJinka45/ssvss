@@ -171,7 +171,13 @@ export function AdminConsole() {
     setFormCategory(product.category);
     setFormDescription(product.description);
     setFormImages(product.images || []);
-    setFormVideos(product.reelVideoPlaceholderUrl ? [product.reelVideoPlaceholderUrl] : []);
+    setFormVideos(
+      product.videos && product.videos.length > 0
+        ? product.videos
+        : product.reelVideoPlaceholderUrl
+        ? [product.reelVideoPlaceholderUrl]
+        : []
+    );
     setFormIsBestSeller(false);
     setFormIsFeatured(false);
     setFormStatus(product.stockStatus);
@@ -282,6 +288,7 @@ export function AdminConsole() {
       stockStatus: formStatus,
       stockCount: formStatus === "SOLD_OUT" ? 0 : 5,
       images: formImages.length > 0 ? formImages : ["/images/sarees/pure-01.jpg"],
+      videos: formVideos.length > 0 ? formVideos : undefined,
       reelVideoPlaceholderUrl: formVideos[0] || undefined,
       highlights: [
         "100% Authentic Dharmavaram Handloom",

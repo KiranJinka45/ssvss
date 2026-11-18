@@ -36,6 +36,7 @@ export interface SareeSKU {
   stockStatus: StockStatus;
   stockCount: number;
   images: string[];
+  videos?: string[];
   reelVideoPlaceholderUrl?: string;
   highlights: string[];
 }

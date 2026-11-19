@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   User,
   Phone,
@@ -10,61 +11,190 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
-  MessageCircle,
+  AlertCircle,
   Eye,
   EyeOff,
+  KeyRound,
+  Smartphone,
+  RefreshCw,
 } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
 import { useAuthStore } from "@/store/useAuthStore";
+import {
+  authenticateWithPassword,
+  registerNewUser,
+  generateOtp,
+  verifyOtpCode,
+  normalizePhone,
+  findUserByIdentifier,
+} from "@/lib/authUsers";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
-  const [showPassword, setShowPassword] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const { loginAsCustomer } = useAuthStore();
+  const [authMode, setAuthMode] = useState<"password" | "otp">("password");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Form states
+  const [identifier, setIdentifier] = useState("09493348129");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Sign up states
+  const [signupName, setSignupName] = useState("");
+  const [signupPhone, setSignupPhone] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
+
+  // OTP states
+  const [otpStep, setOtpStep] = useState<"request" | "verify">("request");
+  const [enteredOtp, setEnteredOtp] = useState("");
+  const [generatedOtpDisplay, setGeneratedOtpDisplay] = useState<string | null>(null);
+
+  // Status & Error feedback
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successUser, setSuccessUser] = useState<string | null>(null);
+
+  const { loginWithUser } = useAuthStore();
+
+  const resetErrors = () => {
+    setErrorMessage(null);
+  };
+
+  // 1. Handle Password Sign-In
+  const handlePasswordSignIn = (e: React.FormEvent) => {
     e.preventDefault();
-    loginAsCustomer({
-      name: name || (email ? email.split("@")[0] : "Valued Customer"),
-      email,
-      phone,
+    resetErrors();
+
+    const result = authenticateWithPassword(identifier, password);
+    if (!result.success || !result.user) {
+      setErrorMessage(result.error || "Authentication failed. Please check your credentials.");
+      return;
+    }
+
+    // Success! Log the user in
+    loginWithUser({
+      name: result.user.name,
+      email: result.user.email,
+      phone: result.user.phone,
+      role: result.user.role,
     });
-    setSubmitted(true);
+
+    setSuccessUser(result.user.name);
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
+  };
+
+  // 2. Handle OTP Generation
+  const handleSendOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    resetErrors();
+
+    if (!identifier.trim()) {
+      setErrorMessage("Please enter your mobile number or email address to receive an OTP.");
+      return;
+    }
+
+    const { code } = generateOtp(identifier);
+    setGeneratedOtpDisplay(code);
+    setOtpStep("verify");
+    setEnteredOtp("");
+  };
+
+  // 3. Handle OTP Verification
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    resetErrors();
+
+    const result = verifyOtpCode(identifier, enteredOtp);
+    if (!result.success || !result.user) {
+      setErrorMessage(result.error || "Invalid OTP code. Please enter the correct 6-digit code.");
+      return;
+    }
+
+    // Success! Log the user in
+    loginWithUser({
+      name: result.user.name,
+      email: result.user.email,
+      phone: result.user.phone,
+      role: result.user.role,
+    });
+
+    setSuccessUser(result.user.name);
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
+  };
+
+  // 4. Handle New Account Creation
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    resetErrors();
+
+    if (signupPassword !== signupConfirmPassword) {
+      setErrorMessage("Passwords do not match. Please re-enter your password.");
+      return;
+    }
+
+    if (signupPassword.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
+    const result = registerNewUser({
+      name: signupName,
+      phone: signupPhone,
+      email: signupEmail,
+      password: signupPassword,
+    });
+
+    if (!result.success || !result.user) {
+      setErrorMessage(result.error || "Account registration failed.");
+      return;
+    }
+
+    loginWithUser({
+      name: result.user.name,
+      email: result.user.email,
+      phone: result.user.phone,
+      role: result.user.role,
+    });
+
+    setSuccessUser(result.user.name);
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+    <div className="min-h-screen bg-[#FAF7F2] py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center text-loom-charcoal">
       <div className="max-w-md w-full mx-auto space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <Link href="/" className="inline-block group">
-            <span className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-maroon group-hover:opacity-90 transition-opacity">
+            <span className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#5B1020] group-hover:opacity-90 transition-opacity">
               DHARMAVARAM
             </span>
           </Link>
-          <p className="text-xs uppercase tracking-[0.25em] text-gold-700 font-semibold">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#C59B27] font-semibold">
             Handloom Silk Looms • Customer Portal
           </p>
         </div>
 
         {/* Auth Card */}
         <div className="bg-white rounded-2xl border border-loom-border/80 shadow-luxury p-6 sm:p-8">
-          {/* Tab Switcher: Sign In vs Create Account */}
+          {/* Main Tab Switcher: Sign In vs Create Account */}
           <div className="flex border-b border-loom-border mb-6">
             <button
               type="button"
               onClick={() => {
                 setTab("signin");
-                setSubmitted(false);
+                resetErrors();
               }}
               className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-all ${
                 tab === "signin"
-                  ? "border-maroon text-maroon"
+                  ? "border-[#5B1020] text-[#5B1020]"
                   : "border-transparent text-loom-stone hover:text-loom-charcoal"
               }`}
             >
@@ -74,11 +204,11 @@ export default function LoginPage() {
               type="button"
               onClick={() => {
                 setTab("signup");
-                setSubmitted(false);
+                resetErrors();
               }}
               className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-all ${
                 tab === "signup"
-                  ? "border-maroon text-maroon"
+                  ? "border-[#5B1020] text-[#5B1020]"
                   : "border-transparent text-loom-stone hover:text-loom-charcoal"
               }`}
             >
@@ -86,158 +216,395 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {submitted ? (
-            <div className="text-center py-8 space-y-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-600 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8" />
+          {/* Success State */}
+          {successUser ? (
+            <div className="text-center py-8 space-y-4 animate-fadeIn">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 border-2 border-emerald-400 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+                <CheckCircle2 className="w-9 h-9" />
               </div>
-              <h3 className="font-serif text-xl font-bold text-maroon">
-                {tab === "signin" ? "Welcome Back!" : "Account Registered Successfully!"}
-              </h3>
-              <p className="text-xs text-loom-bronze leading-relaxed max-w-xs mx-auto">
-                You are now signed in to Dharmavaram Handloom Silk Looms. Track orders, explore saved drapes, and access exclusive 15% festive privilege privileges.
-              </p>
-              <div className="pt-2">
+              <div>
+                <h3 className="font-serif text-2xl font-bold text-[#5B1020]">
+                  Welcome, {successUser}!
+                </h3>
+                <p className="text-xs text-loom-stone mt-1">
+                  You are now signed in. Redirecting you to the storefront...
+                </p>
+              </div>
+
+              <div className="pt-4 flex flex-col gap-2">
                 <Link
-                  href="/collections/all"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-maroon text-canvas text-xs font-semibold hover:bg-maroon-700 transition-colors"
+                  href="/"
+                  className="w-full py-3 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-semibold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <span>Explore Handloom Collections</span>
+                  <span>Go to Storefront Now</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {tab === "signup" && (
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Sravanthi Reddy"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-loom-border bg-canvas/40 text-sm text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
-                    />
+            <div>
+              {/* Error Alert Box */}
+              {errorMessage && (
+                <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-start gap-2.5 animate-fadeIn">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <span className="font-semibold block mb-0.5">Authentication Error</span>
+                    <span>{errorMessage}</span>
                   </div>
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
-                  Mobile Number / WhatsApp
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-loom-border bg-canvas/40 text-sm text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="buyer@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-loom-border bg-canvas/40 text-sm text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
-                    Password
-                  </label>
-                  {tab === "signin" && (
-                    <a
-                      href="#forgot"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        alert("Password reset OTP will be sent to your registered WhatsApp mobile number.");
+              {/* SIGN IN TAB */}
+              {tab === "signin" && (
+                <div className="space-y-5">
+                  {/* Mode Toggle: Password vs OTP */}
+                  <div className="bg-[#FAF7F2] p-1 rounded-xl border border-loom-border/80 flex text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("password");
+                        resetErrors();
                       }}
-                      className="text-[11px] text-maroon hover:underline font-medium"
+                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                        authMode === "password"
+                          ? "bg-white text-[#5B1020] shadow-sm border border-loom-border/60"
+                          : "text-loom-stone hover:text-loom-charcoal"
+                      }`}
                     >
-                      Forgot Password?
-                    </a>
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>Password Login</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("otp");
+                        resetErrors();
+                      }}
+                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                        authMode === "otp"
+                          ? "bg-white text-[#5B1020] shadow-sm border border-loom-border/60"
+                          : "text-loom-stone hover:text-loom-charcoal"
+                      }`}
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span>Instant OTP Login</span>
+                    </button>
+                  </div>
+
+                  {/* 1. PASSWORD SIGN-IN FORM */}
+                  {authMode === "password" && (
+                    <form onSubmit={handlePasswordSignIn} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
+                          Mobile Number or Email
+                        </label>
+                        <div className="relative">
+                          <User className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            required
+                            value={identifier}
+                            onChange={(e) => {
+                              setIdentifier(e.target.value);
+                              resetErrors();
+                            }}
+                            placeholder="e.g. 09493348129 or name@example.com"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
+                            Password
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAuthMode("otp");
+                              setOtpStep("request");
+                              resetErrors();
+                            }}
+                            className="text-[11px] text-[#8B263E] hover:underline font-medium"
+                          >
+                            Forgot? Login with OTP
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <Lock className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            required
+                            value={password}
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                              resetErrors();
+                            }}
+                            placeholder="Enter your password"
+                            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-loom-stone hover:text-loom-charcoal"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2"
+                      >
+                        Sign In to Account
+                      </button>
+                    </form>
+                  )}
+
+                  {/* 2. OTP SIGN-IN FORM */}
+                  {authMode === "otp" && (
+                    <div className="space-y-4">
+                      {otpStep === "request" ? (
+                        <form onSubmit={handleSendOtp} className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
+                              Mobile Number / WhatsApp or Email
+                            </label>
+                            <div className="relative">
+                              <Phone className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                              <input
+                                type="text"
+                                required
+                                value={identifier}
+                                onChange={(e) => {
+                                  setIdentifier(e.target.value);
+                                  resetErrors();
+                                }}
+                                placeholder="e.g. 09493348129"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                              />
+                            </div>
+                            <p className="text-[11px] text-loom-stone mt-1.5">
+                              We will generate an instant 6-digit verification code.
+                            </p>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 flex items-center justify-center gap-2"
+                          >
+                            <Smartphone className="w-4 h-4" />
+                            <span>Send Verification OTP</span>
+                          </button>
+                        </form>
+                      ) : (
+                        <form onSubmit={handleVerifyOtp} className="space-y-4">
+                          {/* Simulated SMS/WhatsApp OTP Delivery Banner */}
+                          {generatedOtpDisplay && (
+                            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold flex items-center gap-1.5 text-amber-800">
+                                  <span>📲 OTP Delivered:</span>
+                                </span>
+                                <span className="text-[11px] text-amber-700">Valid for 5 mins</span>
+                              </div>
+                              <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-amber-200">
+                                <span className="font-mono text-lg font-extrabold tracking-widest text-[#5B1020]">
+                                  {generatedOtpDisplay}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setEnteredOtp(generatedOtpDisplay)}
+                                  className="text-[11px] px-2 py-1 rounded bg-[#5B1020] text-white font-semibold hover:bg-[#3D0A15] transition-colors"
+                                >
+                                  Auto-fill OTP
+                                </button>
+                              </div>
+                              <p className="text-[10px] text-amber-800/80">
+                                Sent to WhatsApp/SMS for {identifier}
+                              </p>
+                            </div>
+                          )}
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
+                                Enter 6-Digit OTP
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const { code } = generateOtp(identifier);
+                                  setGeneratedOtpDisplay(code);
+                                  resetErrors();
+                                }}
+                                className="text-[11px] text-[#8B263E] hover:underline flex items-center gap-1"
+                              >
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Resend OTP</span>
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              maxLength={6}
+                              required
+                              value={enteredOtp}
+                              onChange={(e) => {
+                                setEnteredOtp(e.target.value.replace(/\D/g, ""));
+                                resetErrors();
+                              }}
+                              placeholder="• • • • • •"
+                              className="w-full text-center tracking-[0.5em] font-mono text-xl py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98"
+                          >
+                            Verify OTP & Sign In
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOtpStep("request");
+                              resetErrors();
+                            }}
+                            className="w-full text-center text-xs text-loom-stone hover:text-loom-charcoal"
+                          >
+                            ← Change Mobile Number / Email
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   )}
                 </div>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-loom-border bg-canvas/40 text-sm text-loom-charcoal focus:outline-none focus:border-maroon focus:ring-1 focus:ring-maroon"
-                  />
+              )}
+
+              {/* CREATE ACCOUNT TAB */}
+              {tab === "signup" && (
+                <form onSubmit={handleSignUp} className="space-y-3.5">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={signupName}
+                        onChange={(e) => {
+                          setSignupName(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="e.g. Kiran Kumar"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
+                      Mobile Number / WhatsApp
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="tel"
+                        required
+                        value={signupPhone}
+                        onChange={(e) => {
+                          setSignupPhone(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="+91 94933 48129"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        required
+                        value={signupEmail}
+                        onChange={(e) => {
+                          setSignupEmail(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="kiranjinkakumar@gmail.com"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
+                      Create Password (Min 6 Characters)
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        value={signupPassword}
+                        onChange={(e) => {
+                          setSignupPassword(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="Create a secure password"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        value={signupConfirmPassword}
+                        onChange={(e) => {
+                          setSignupConfirmPassword(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="Re-enter password"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                    </div>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-loom-stone hover:text-loom-charcoal"
+                    type="submit"
+                    className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    Create My Handloom Account
                   </button>
-                </div>
-              </div>
+                </form>
+              )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full py-3.5 px-4 rounded-lg bg-maroon hover:bg-maroon-700 text-canvas font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2"
-              >
-                {tab === "signin" ? "Sign In to Account" : "Create My Handloom Account"}
-              </button>
-
-              {/* Divider */}
-              <div className="relative py-2 flex items-center justify-center">
-                <span className="w-full border-t border-loom-border" />
-                <span className="absolute bg-white px-3 text-[11px] text-loom-stone uppercase tracking-wider">
-                  Or Continue With
+              {/* Trust Guarantees */}
+              <div className="mt-6 pt-5 border-t border-loom-border/60 flex items-center justify-between text-[11px] text-loom-stone">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-silk-emerald" /> 100% Secure Authentication
                 </span>
+                <span className="text-loom-stone">Direct Master Pit-Looms</span>
               </div>
-
-              {/* WhatsApp Instant One-Tap Sign In */}
-              <a
-                href={`https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                  "Hello Dharmavaram Looms, I want to sign in to my account via WhatsApp."
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 px-4 rounded-lg border border-emerald-500/40 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs tracking-wide flex items-center justify-center gap-2 transition-all shadow-xs"
-              >
-                <MessageCircle className="w-4 h-4 fill-emerald-600 text-emerald-600" />
-                <span>Instant Login via WhatsApp</span>
-              </a>
-            </form>
+            </div>
           )}
-
-          {/* Trust Guarantees */}
-          <div className="mt-6 pt-5 border-t border-loom-border/60 flex items-center justify-between text-[11px] text-loom-stone">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-silk-emerald" /> 100% Silk Mark Authenticated
-            </span>
-            <span className="text-loom-stone">Direct Master Pit-Looms</span>
-          </div>
         </div>
 
         {/* Back Link */}

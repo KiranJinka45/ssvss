@@ -15,6 +15,7 @@ interface AuthStore {
   user: UserProfile | null;
   loginAsAdmin: () => void;
   loginAsCustomer: (data: { name: string; email?: string; phone?: string }) => void;
+  loginWithUser: (user: UserProfile) => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   logout: () => void;
   syncFromStorage: () => void;
@@ -36,6 +37,20 @@ export const useAuthStore = create<AuthStore>()(
             name: "Loom Admin",
             role: "admin",
           },
+        });
+      },
+
+      loginWithUser: (user: UserProfile) => {
+        if (typeof window !== "undefined") {
+          if (user.role === "admin") {
+            sessionStorage.setItem("admin_auth", "true");
+          } else {
+            sessionStorage.removeItem("admin_auth");
+          }
+        }
+        set({
+          isLoggedIn: true,
+          user,
         });
       },
 

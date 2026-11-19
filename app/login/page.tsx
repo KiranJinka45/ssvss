@@ -9,32 +9,22 @@ import {
   Mail,
   Lock,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
   AlertCircle,
   Eye,
   EyeOff,
-  KeyRound,
-  Smartphone,
-  RefreshCw,
 } from "lucide-react";
-import { MERCHANT_CONFIG } from "@/lib/config";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   authenticateWithPassword,
   registerNewUser,
-  generateOtp,
-  verifyOtpCode,
-  normalizePhone,
-  findUserByIdentifier,
 } from "@/lib/authUsers";
 
 export default function LoginPage() {
   const router = useRouter();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
-  const [authMode, setAuthMode] = useState<"password" | "otp">("password");
 
-  // Form states
+  // Sign in states
   const [identifier, setIdentifier] = useState("09493348129");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -46,11 +36,6 @@ export default function LoginPage() {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
 
-  // OTP states
-  const [otpStep, setOtpStep] = useState<"request" | "verify">("request");
-  const [enteredOtp, setEnteredOtp] = useState("");
-  const [generatedOtpDisplay, setGeneratedOtpDisplay] = useState<string | null>(null);
-
   // Status & Error feedback
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successUser, setSuccessUser] = useState<string | null>(null);
@@ -61,7 +46,7 @@ export default function LoginPage() {
     setErrorMessage(null);
   };
 
-  // 1. Handle Password Sign-In
+  // Handle Password Sign-In
   const handlePasswordSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     resetErrors();
@@ -86,48 +71,7 @@ export default function LoginPage() {
     }, 1500);
   };
 
-  // 2. Handle OTP Generation
-  const handleSendOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    resetErrors();
-
-    if (!identifier.trim()) {
-      setErrorMessage("Please enter your mobile number or email address to receive an OTP.");
-      return;
-    }
-
-    const { code } = generateOtp(identifier);
-    setGeneratedOtpDisplay(code);
-    setOtpStep("verify");
-    setEnteredOtp("");
-  };
-
-  // 3. Handle OTP Verification
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    resetErrors();
-
-    const result = verifyOtpCode(identifier, enteredOtp);
-    if (!result.success || !result.user) {
-      setErrorMessage(result.error || "Invalid OTP code. Please enter the correct 6-digit code.");
-      return;
-    }
-
-    // Success! Log the user in
-    loginWithUser({
-      name: result.user.name,
-      email: result.user.email,
-      phone: result.user.phone,
-      role: result.user.role,
-    });
-
-    setSuccessUser(result.user.name);
-    setTimeout(() => {
-      router.push("/");
-    }, 1500);
-  };
-
-  // 4. Handle New Account Creation
+  // Handle New Account Creation
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     resetErrors();
@@ -178,7 +122,7 @@ export default function LoginPage() {
             </span>
           </Link>
           <p className="text-xs uppercase tracking-[0.25em] text-[#C59B27] font-semibold">
-            Handloom Silk Looms • Customer Portal
+            Handloom Silk Looms
           </p>
         </div>
 
@@ -256,232 +200,73 @@ export default function LoginPage() {
 
               {/* SIGN IN TAB */}
               {tab === "signin" && (
-                <div className="space-y-5">
-                  {/* Mode Toggle: Password vs OTP */}
-                  <div className="bg-[#FAF7F2] p-1 rounded-xl border border-loom-border/80 flex text-xs font-semibold">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode("password");
-                        resetErrors();
-                      }}
-                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                        authMode === "password"
-                          ? "bg-white text-[#5B1020] shadow-sm border border-loom-border/60"
-                          : "text-loom-stone hover:text-loom-charcoal"
-                      }`}
-                    >
-                      <KeyRound className="w-3.5 h-3.5" />
-                      <span>Password Login</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode("otp");
-                        resetErrors();
-                      }}
-                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                        authMode === "otp"
-                          ? "bg-white text-[#5B1020] shadow-sm border border-loom-border/60"
-                          : "text-loom-stone hover:text-loom-charcoal"
-                      }`}
-                    >
-                      <Smartphone className="w-3.5 h-3.5" />
-                      <span>Instant OTP Login</span>
-                    </button>
+                <form onSubmit={handlePasswordSignIn} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
+                      Mobile Number or Email
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={identifier}
+                        onChange={(e) => {
+                          setIdentifier(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="e.g. 09493348129 or name@example.com"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                    </div>
                   </div>
 
-                  {/* 1. PASSWORD SIGN-IN FORM */}
-                  {authMode === "password" && (
-                    <form onSubmit={handlePasswordSignIn} className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
-                          Mobile Number or Email
-                        </label>
-                        <div className="relative">
-                          <User className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            required
-                            value={identifier}
-                            onChange={(e) => {
-                              setIdentifier(e.target.value);
-                              resetErrors();
-                            }}
-                            placeholder="e.g. 09493348129 or name@example.com"
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
-                            Password
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAuthMode("otp");
-                              setOtpStep("request");
-                              resetErrors();
-                            }}
-                            className="text-[11px] text-[#8B263E] hover:underline font-medium"
-                          >
-                            Forgot? Login with OTP
-                          </button>
-                        </div>
-                        <div className="relative">
-                          <Lock className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            required
-                            value={password}
-                            onChange={(e) => {
-                              setPassword(e.target.value);
-                              resetErrors();
-                            }}
-                            placeholder="Enter your password"
-                            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-loom-stone hover:text-loom-charcoal"
-                          >
-                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2"
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
+                        Password
+                      </label>
+                      <a
+                        href="#forgot"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          alert("Please contact our master loom support on WhatsApp to reset your password.");
+                        }}
+                        className="text-[11px] text-[#8B263E] hover:underline font-medium"
                       >
-                        Sign In to Account
-                      </button>
-                    </form>
-                  )}
-
-                  {/* 2. OTP SIGN-IN FORM */}
-                  {authMode === "otp" && (
-                    <div className="space-y-4">
-                      {otpStep === "request" ? (
-                        <form onSubmit={handleSendOtp} className="space-y-4">
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
-                              Mobile Number / WhatsApp or Email
-                            </label>
-                            <div className="relative">
-                              <Phone className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                              <input
-                                type="text"
-                                required
-                                value={identifier}
-                                onChange={(e) => {
-                                  setIdentifier(e.target.value);
-                                  resetErrors();
-                                }}
-                                placeholder="e.g. 09493348129"
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
-                              />
-                            </div>
-                            <p className="text-[11px] text-loom-stone mt-1.5">
-                              We will generate an instant 6-digit verification code.
-                            </p>
-                          </div>
-
-                          <button
-                            type="submit"
-                            className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 flex items-center justify-center gap-2"
-                          >
-                            <Smartphone className="w-4 h-4" />
-                            <span>Send Verification OTP</span>
-                          </button>
-                        </form>
-                      ) : (
-                        <form onSubmit={handleVerifyOtp} className="space-y-4">
-                          {/* Simulated SMS/WhatsApp OTP Delivery Banner */}
-                          {generatedOtpDisplay && (
-                            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold flex items-center gap-1.5 text-amber-800">
-                                  <span>📲 OTP Delivered:</span>
-                                </span>
-                                <span className="text-[11px] text-amber-700">Valid for 5 mins</span>
-                              </div>
-                              <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-amber-200">
-                                <span className="font-mono text-lg font-extrabold tracking-widest text-[#5B1020]">
-                                  {generatedOtpDisplay}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => setEnteredOtp(generatedOtpDisplay)}
-                                  className="text-[11px] px-2 py-1 rounded bg-[#5B1020] text-white font-semibold hover:bg-[#3D0A15] transition-colors"
-                                >
-                                  Auto-fill OTP
-                                </button>
-                              </div>
-                              <p className="text-[10px] text-amber-800/80">
-                                Sent to WhatsApp/SMS for {identifier}
-                              </p>
-                            </div>
-                          )}
-
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
-                                Enter 6-Digit OTP
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const { code } = generateOtp(identifier);
-                                  setGeneratedOtpDisplay(code);
-                                  resetErrors();
-                                }}
-                                className="text-[11px] text-[#8B263E] hover:underline flex items-center gap-1"
-                              >
-                                <RefreshCw className="w-3 h-3" />
-                                <span>Resend OTP</span>
-                              </button>
-                            </div>
-                            <input
-                              type="text"
-                              maxLength={6}
-                              required
-                              value={enteredOtp}
-                              onChange={(e) => {
-                                setEnteredOtp(e.target.value.replace(/\D/g, ""));
-                                resetErrors();
-                              }}
-                              placeholder="• • • • • •"
-                              className="w-full text-center tracking-[0.5em] font-mono text-xl py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
-                            />
-                          </div>
-
-                          <button
-                            type="submit"
-                            className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98"
-                          >
-                            Verify OTP & Sign In
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOtpStep("request");
-                              resetErrors();
-                            }}
-                            className="w-full text-center text-xs text-loom-stone hover:text-loom-charcoal"
-                          >
-                            ← Change Mobile Number / Email
-                          </button>
-                        </form>
-                      )}
+                        Forgot Password?
+                      </a>
                     </div>
-                  )}
-                </div>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          resetErrors();
+                        }}
+                        placeholder="Enter your password"
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-loom-stone hover:text-loom-charcoal"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2"
+                  >
+                    Sign In to Account
+                  </button>
+                </form>
               )}
 
               {/* CREATE ACCOUNT TAB */}
@@ -595,14 +380,6 @@ export default function LoginPage() {
                   </button>
                 </form>
               )}
-
-              {/* Trust Guarantees */}
-              <div className="mt-6 pt-5 border-t border-loom-border/60 flex items-center justify-between text-[11px] text-loom-stone">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-silk-emerald" /> 100% Secure Authentication
-                </span>
-                <span className="text-loom-stone">Direct Master Pit-Looms</span>
-              </div>
             </div>
           )}
         </div>

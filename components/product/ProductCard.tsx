@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart, ShieldCheck, Sparkles, MessageCircle, Eye, Check } from "lucide-react";
 import { SareeSKU } from "@/data/catalog";
@@ -13,9 +13,15 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ saree }: ProductCardProps) {
+  const [mounted, setMounted] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const { isInWishlist, toggleWishlist, addItem } = useCartStore();
-  const wishlisted = isInWishlist(saree.sku);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const wishlisted = mounted ? isInWishlist(saree.sku) : false;
 
   const savings = Math.max(0, saree.showroomPrice - saree.price);
   const savingsPercent = Math.round((savings / saree.showroomPrice) * 100);

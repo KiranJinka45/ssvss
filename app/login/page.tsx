@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Send,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
@@ -33,6 +34,7 @@ export default function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [activeOtpCode, setActiveOtpCode] = useState("481290");
 
   // Sign Up states
   const [signupName, setSignupName] = useState("");
@@ -71,7 +73,8 @@ export default function LoginPage() {
     setIsSending(true);
     try {
       // Prime local storage verification cache
-      generateOtp(identifier);
+      const { code } = generateOtp(identifier);
+      setActiveOtpCode(code);
 
       // Call server-side SMS dispatch API
       await fetch("/api/auth/send-otp", {
@@ -329,9 +332,26 @@ export default function LoginPage() {
               {infoMessage && (
                 <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-start gap-2.5 animate-fadeIn">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <span className="font-bold block text-emerald-950">OTP Sent</span>
-                    <p className="text-emerald-800 leading-relaxed">{infoMessage}</p>
+                  <div className="space-y-1.5 flex-1">
+                    <div>
+                      <span className="font-bold block text-emerald-950">OTP Dispatched</span>
+                      <p className="text-emerald-800 leading-relaxed">{infoMessage}</p>
+                    </div>
+                    {otpSent && normalizePhone(identifier) && (
+                      <div className="pt-0.5">
+                        <a
+                          href={`https://wa.me/91${normalizePhone(identifier)}?text=${encodeURIComponent(
+                            `Your SSvSS Silk Looms login verification OTP is: ${activeOtpCode}. Valid for 5 minutes.`
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs transition-all shadow-sm"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>Didn&apos;t get SMS? Send OTP to WhatsApp (+91 {normalizePhone(identifier)})</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

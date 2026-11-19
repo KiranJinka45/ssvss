@@ -99,6 +99,22 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // 3. 2Factor.in Gateway (if TWO_FACTOR_API_KEY configured)
+      if (gatewayStatus === "local_dispatch" && process.env.TWO_FACTOR_API_KEY) {
+        try {
+          const twoFactorRes = await fetch(
+            `https://2factor.in/API/V1/${process.env.TWO_FACTOR_API_KEY}/SMS/+91${cleanId}/${code}/SSVSS_OTP`
+          );
+          const twoFactorData = await twoFactorRes.json();
+          if (twoFactorData?.Status === "Success") {
+            gatewayStatus = "2factor";
+            console.log(`[2Factor] Real cellular OTP dispatched to +91 ${cleanId}`);
+          }
+        } catch (twoFactorErr) {
+          console.error("[2Factor] Error sending SMS:", twoFactorErr);
+        }
+      }
+
       // Server console log for development audit
       console.log(`\n======================================================`);
       console.log(`[SSvSS SMS GATEWAY] Dispatched OTP to mobile +91 ${cleanId}`);

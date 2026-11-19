@@ -12,7 +12,6 @@ import {
   Sparkles,
   Award,
   HelpCircle,
-  ChevronDown,
   X,
 } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
@@ -159,15 +158,11 @@ export function Footer() {
               <button
                 type="button"
                 onClick={() => setFaqOpen((prev) => !prev)}
-                className="hover:text-maroon transition-colors text-left flex items-center gap-1.5 font-medium text-maroon group"
+                className="hover:text-maroon transition-colors text-left"
                 aria-expanded={faqOpen}
                 aria-controls="footer-faqs-panel"
               >
-                <span>FAQs</span>
-                <HelpCircle className="w-3.5 h-3.5 text-gold-700" />
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold-100 text-gold-800 border border-gold-300/50">
-                  {faqOpen ? "Hide ▲" : "View ▼"}
-                </span>
+                FAQs
               </button>
             </li>
             <li>
@@ -272,24 +267,10 @@ export function Footer() {
         </div>
       )}
 
-      {/* Clean Copyright & Registry Bar */}
+      {/* Clean Copyright Bar */}
       <div className="border-t border-loom-border/50 py-6 bg-canvas/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-loom-charcoal/65">
-          <p>© {new Date().getFullYear()} {MERCHANT_CONFIG.BRAND_NAME}. Handcrafted in Dharmavaram, Andhra Pradesh.</p>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setFaqOpen((prev) => !prev)}
-              className="text-maroon font-semibold hover:underline flex items-center gap-1"
-            >
-              <HelpCircle className="w-3 h-3 text-gold-700" />
-              <span>{faqOpen ? "Hide FAQs" : "FAQs"}</span>
-            </button>
-            <span>•</span>
-            <p className="text-[11px] text-loom-charcoal/50">
-              GSTIN: <span className="font-mono">{MERCHANT_CONFIG.GSTIN}</span> • Silk Mark: <span className="font-mono">{MERCHANT_CONFIG.SILK_MARK_ID}</span>
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-loom-charcoal/65">
+          <p>© {new Date().getFullYear()} SSvSS. Handcrafted in Dharmavaram, Andhra Pradesh. All rights reserved.</p>
         </div>
       </div>
     </footer>

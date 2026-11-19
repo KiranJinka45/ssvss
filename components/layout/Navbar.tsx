@@ -95,8 +95,8 @@ export function Navbar() {
 
   const userIsLoggedIn = mounted ? isLoggedIn : false;
 
-  // Do not render storefront navbar on admin console
-  if (pathname?.startsWith("/admin")) {
+  // Do not render storefront navbar on admin console, on login page, or when user is not logged in
+  if (pathname?.startsWith("/admin") || pathname === "/login" || !mounted || !isLoggedIn) {
     return null;
   }
 

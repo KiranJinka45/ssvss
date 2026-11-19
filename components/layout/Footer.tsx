@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const FOOTER_FAQS = [
   {
@@ -42,9 +43,15 @@ const FOOTER_FAQS = [
 export function Footer() {
   const pathname = usePathname();
   const [faqOpen, setFaqOpen] = useState(false);
+  const { isLoggedIn } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
 
-  // Do not render storefront footer on admin console
-  if (pathname?.startsWith("/admin")) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Do not render storefront footer on admin console, on login page, or when user is not logged in
+  if (pathname?.startsWith("/admin") || pathname === "/login" || !mounted || !isLoggedIn) {
     return null;
   }
 

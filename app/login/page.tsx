@@ -47,7 +47,13 @@ export default function LoginPage() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [successUser, setSuccessUser] = useState<string | null>(null);
 
-  const { loginWithUser } = useAuthStore();
+  const { loginWithUser, isLoggedIn } = useAuthStore();
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      router.replace("/");
+    }
+  }, [isLoggedIn, router]);
 
   const resetMessages = () => {
     setErrorMessage(null);
@@ -538,14 +544,11 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Back Link */}
+        {/* Trust Note */}
         <div className="text-center">
-          <Link
-            href="/"
-            className="text-xs text-loom-bronze hover:text-[#5B1020] transition-colors inline-flex items-center gap-1"
-          >
-            <span>← Back to Dharmavaram Storefront</span>
-          </Link>
+          <p className="text-[11px] text-loom-stone tracking-wide">
+            Direct Master Pit-Looms • Sri Sathya Sai District, Dharmavaram
+          </p>
         </div>
       </div>
     </div>

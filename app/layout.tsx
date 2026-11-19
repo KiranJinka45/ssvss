@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 export const metadata: Metadata = {
   title: "Dharmavaram Silk Sarees | Direct from Pit-Looms | Silk Mark Certified",
@@ -42,10 +43,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-canvas text-loom-charcoal antialiased">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
+        <AuthGate>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+        </AuthGate>
       </body>
     </html>
   );

@@ -46,25 +46,6 @@ export default function HomePage() {
     },
   ];
 
-  const faqs = [
-    {
-      q: "How do I know this is 100% pure silk and not synthetic?",
-      a: "Every pure silk and bridal heirloom saree from our looms carries an official Central Silk Board of India 'Silk Mark' certified tag with a unique QR code. You can scan or cross-verify this code directly on the central government portal. We also perform flame purity tests on loom yarn batches.",
-    },
-    {
-      q: "Why are your prices ₹5,000 to ₹9,000 lower than city showrooms?",
-      a: "City showrooms in Hyderabad, Bangalore, and Chennai incur prime commercial rents (often ₹3-5 Lakhs/month), distributor commissions, sales staff salaries, and 45-50% retail markups. When you order from us, your saree travels directly from the pit-loom in Dharmavaram to your doorstep. Zero middlemen, fair wages for the weaver, and honest pricing for you.",
-    },
-    {
-      q: "Can I inspect the saree on a video call before making payment?",
-      a: "Yes! Simply click 'Book Live Video Call' on any product page or use the top banner. Our loom master in Kothapeta will connect via WhatsApp video call, open the full 6.2-meter saree in natural morning sunlight, show the pallu zari, and check the pleat drape.",
-    },
-    {
-      q: "What payment methods do you accept?",
-      a: "We support direct Current Account UPI payments (0% extra gateway fees) via WhatsApp, as well as online NetBanking, Debit/Credit Cards, and UPI Intent gateways. Official GST tax invoices are provided with every order.",
-    },
-  ];
-
   return (
     <div className="flex flex-col">
       {/* Hero Editorial Section */}
@@ -153,36 +134,6 @@ export default function HomePage() {
                     <ShieldCheck className="w-3 h-3" /> Verified Buyer
                   </span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Dharmavaram FAQ Section */}
-      <section className="py-20 bg-canvas-surface">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
-              Frequently Asked Questions
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-maroon">
-              Handloom Integrity & Ordering Guide
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <div
-                key={i}
-                className="p-5 sm:p-6 rounded-xl bg-canvas border border-loom-border/80 shadow-sm"
-              >
-                <h3 className="font-serif font-bold text-base sm:text-lg text-maroon">
-                  {faq.q}
-                </h3>
-                <p className="text-xs sm:text-sm text-loom-bronze mt-2 leading-relaxed">
-                  {faq.a}
-                </p>
               </div>
             ))}
           </div>

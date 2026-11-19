@@ -1,13 +1,48 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPin, Phone, Mail, ShieldCheck, Truck, Sparkles, Award } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  ShieldCheck,
+  Truck,
+  Sparkles,
+  Award,
+  HelpCircle,
+  ChevronDown,
+  X,
+} from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
+
+const FOOTER_FAQS = [
+  {
+    q: "How do I know this is 100% pure silk and not synthetic?",
+    a: "Every pure silk and bridal heirloom saree from our looms carries an official Central Silk Board of India 'Silk Mark' certified tag with a unique QR code. We also perform flame purity tests on yarn batches.",
+  },
+  {
+    q: "Why are your prices ₹5,000 to ₹9,000 lower than city showrooms?",
+    a: "City showrooms incur prime commercial rents, distributor commissions, and 45-50% markups. Ordering from us sends your saree straight from the Dharmavaram pit-loom to your wardrobe—zero middlemen, fair weaver wages.",
+  },
+  {
+    q: "Can I inspect the saree on a video call before ordering?",
+    a: "Yes! Simply tap 'Live Video Call' or message us on WhatsApp. Our loom master in Kothapeta will open the full 6.2-meter saree on video, show the pallu sheen, and inspect the drape with you.",
+  },
+  {
+    q: "What is the dispatch and delivery timeline?",
+    a: "All ready sarees are dispatched within 24 hours in rigid archival presentation boxes via insured express courier, reaching major Indian cities in 2 to 4 business days.",
+  },
+  {
+    q: "What payment methods are supported?",
+    a: "We support direct Current Account UPI payments (0% extra gateway fees) via WhatsApp, as well as online NetBanking, Debit/Credit Cards, and UPI Intent gateways with official GST invoices.",
+  },
+];
 
 export function Footer() {
   const pathname = usePathname();
+  const [faqOpen, setFaqOpen] = useState(false);
 
   // Do not render storefront footer on admin console
   if (pathname?.startsWith("/admin")) {
@@ -111,7 +146,7 @@ export function Footer() {
           </h5>
           <ul className="space-y-2.5 text-sm text-loom-charcoal/80">
             <li>
-              <Link href="/#heritage-story" className="hover:text-maroon transition-colors">
+              <Link href="/about" className="hover:text-maroon transition-colors">
                 50+ Year Heritage
               </Link>
             </li>
@@ -119,6 +154,21 @@ export function Footer() {
               <Link href="/collections/pure-silk" className="hover:text-maroon transition-colors">
                 Silk Mark Verification
               </Link>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={() => setFaqOpen((prev) => !prev)}
+                className="hover:text-maroon transition-colors text-left flex items-center gap-1.5 font-medium text-maroon group"
+                aria-expanded={faqOpen}
+                aria-controls="footer-faqs-panel"
+              >
+                <span>FAQs</span>
+                <HelpCircle className="w-3.5 h-3.5 text-gold-700" />
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gold-100 text-gold-800 border border-gold-300/50">
+                  {faqOpen ? "Hide ▲" : "View ▼"}
+                </span>
+              </button>
             </li>
             <li>
               <Link href="/wholesale" className="hover:text-maroon transition-colors">
@@ -157,13 +207,89 @@ export function Footer() {
         </div>
       </div>
 
+      {/* Small Expandable FAQ Drawer / Panel */}
+      {faqOpen && (
+        <div
+          id="footer-faqs-panel"
+          className="border-t border-b border-loom-border/80 bg-[#FAF3E8] py-8 px-4 sm:px-6 lg:px-8 animate-fadeIn"
+        >
+          <div className="max-w-6xl mx-auto space-y-6">
+            <div className="flex items-center justify-between border-b border-loom-border/60 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-[#5B1020] text-gold-300 flex items-center justify-center">
+                  <HelpCircle className="w-4 h-4 text-[#E5B842]" />
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-base text-[#5B1020]">
+                    Frequently Asked Questions (FAQs)
+                  </h4>
+                  <p className="text-xs text-loom-stone">
+                    Quick guide to handloom authenticity, dispatch, and ordering.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFaqOpen(false)}
+                className="text-xs px-3 py-1.5 rounded-lg bg-white border border-loom-border hover:bg-[#24060E] hover:text-white text-loom-charcoal font-semibold flex items-center gap-1.5 transition-all shadow-2xs"
+                title="Close FAQs"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Close FAQs</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+              {FOOTER_FAQS.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl bg-white border border-loom-border/70 shadow-2xs space-y-2 flex flex-col justify-between"
+                >
+                  <h5 className="font-serif font-bold text-sm text-[#5B1020] leading-snug">
+                    {faq.q}
+                  </h5>
+                  <p className="text-loom-charcoal/80 leading-relaxed text-[11px] sm:text-xs">
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 text-center text-xs text-loom-stone flex flex-wrap items-center justify-center gap-2">
+              <span>Have a specific weaving question or want to inspect a pallu live?</span>
+              <a
+                href={`https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#5B1020] font-semibold underline hover:text-maroon flex items-center gap-1"
+              >
+                <span>Chat directly with our master loom on WhatsApp</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Clean Copyright & Registry Bar */}
       <div className="border-t border-loom-border/50 py-6 bg-canvas/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-loom-charcoal/65">
           <p>© {new Date().getFullYear()} {MERCHANT_CONFIG.BRAND_NAME}. Handcrafted in Dharmavaram, Andhra Pradesh.</p>
-          <p className="text-[11px] text-loom-charcoal/50">
-            GSTIN: <span className="font-mono">{MERCHANT_CONFIG.GSTIN}</span> • Silk Mark: <span className="font-mono">{MERCHANT_CONFIG.SILK_MARK_ID}</span>
-          </p>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setFaqOpen((prev) => !prev)}
+              className="text-maroon font-semibold hover:underline flex items-center gap-1"
+            >
+              <HelpCircle className="w-3 h-3 text-gold-700" />
+              <span>{faqOpen ? "Hide FAQs" : "FAQs"}</span>
+            </button>
+            <span>•</span>
+            <p className="text-[11px] text-loom-charcoal/50">
+              GSTIN: <span className="font-mono">{MERCHANT_CONFIG.GSTIN}</span> • Silk Mark: <span className="font-mono">{MERCHANT_CONFIG.SILK_MARK_ID}</span>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

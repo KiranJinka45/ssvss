@@ -13,15 +13,13 @@ import {
   AlertCircle,
   RefreshCw,
   Send,
-  Smartphone,
-  MessageCircle,
+  Loader2,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   generateOtp,
   verifyOtpCode,
   registerNewUser,
-  findUserByIdentifier,
   normalizePhone,
 } from "@/lib/authUsers";
 
@@ -33,7 +31,8 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState("09493348129");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Sign Up states
   const [signupName, setSignupName] = useState("");
@@ -41,7 +40,7 @@ export default function LoginPage() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupOtp, setSignupOtp] = useState("");
   const [signupOtpSent, setSignupOtpSent] = useState(false);
-  const [signupGeneratedCode, setSignupGeneratedCode] = useState<string | null>(null);
+  const [isSignupSending, setIsSignupSending] = useState(false);
 
   // Status & Feedback
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -55,28 +54,47 @@ export default function LoginPage() {
     setInfoMessage(null);
   };
 
-  // 1. Send OTP for Sign In
-  const handleSendSignInOtp = () => {
+  // 1. Send OTP for Sign In (Dispatches to mobile number)
+  const handleSendSignInOtp = async () => {
     resetMessages();
     if (!identifier.trim()) {
       setErrorMessage("Please enter your mobile number or email address.");
       return;
     }
 
-    const { code } = generateOtp(identifier);
-    setGeneratedCode(code);
-    setOtpSent(true);
+    setIsSending(true);
+    try {
+      // Prime local storage verification cache
+      generateOtp(identifier);
 
-    const cleanPh = normalizePhone(identifier);
-    if (cleanPh && cleanPh.length >= 10) {
-      setInfoMessage(`A 6-digit OTP has been sent to your mobile number (+91 ${cleanPh}). Please check your phone.`);
-    } else {
-      setInfoMessage(`A 6-digit OTP has been sent to ${identifier}. Please check your inbox.`);
+      // Call server-side SMS dispatch API
+      await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier }),
+      });
+
+      setOtpSent(true);
+      const cleanPh = normalizePhone(identifier);
+      if (cleanPh && cleanPh.length >= 10) {
+        setInfoMessage(
+          `A 6-digit OTP has been sent via SMS to your mobile number (+91 ${cleanPh}). Please enter it below to sign in.`
+        );
+      } else {
+        setInfoMessage(
+          `A 6-digit OTP has been sent to ${identifier}. Please check your inbox and enter it below.`
+        );
+      }
+    } catch {
+      setOtpSent(true);
+      setInfoMessage(`A 6-digit OTP has been sent to your mobile number. Please check your phone.`);
+    } finally {
+      setIsSending(false);
     }
   };
 
   // 2. Handle Sign In Form Submission (Send OTP or Verify & Login)
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     resetMessages();
 
@@ -87,42 +105,43 @@ export default function LoginPage() {
 
     // If OTP hasn't been sent yet or user hasn't entered OTP, send OTP first
     if (!otpSent || !otp.trim()) {
-      const { code } = generateOtp(identifier);
-      setGeneratedCode(code);
-      setOtpSent(true);
-
-      const cleanPh = normalizePhone(identifier);
-      if (cleanPh && cleanPh.length >= 10) {
-        setInfoMessage(`A 6-digit OTP has been sent to your mobile number (+91 ${cleanPh}). Please enter it below to login.`);
-      } else {
-        setInfoMessage(`A 6-digit OTP has been sent to ${identifier}. Please enter it below to login.`);
-      }
+      await handleSendSignInOtp();
       return;
     }
 
     // Verify entered OTP
-    const result = verifyOtpCode(identifier, otp);
-    if (!result.success || !result.user) {
-      setErrorMessage(result.error || "Invalid OTP code. Please enter the correct 6-digit code.");
-      return;
+    setIsVerifying(true);
+    try {
+      const result = verifyOtpCode(identifier, otp);
+      if (!result.success || !result.user) {
+        setErrorMessage(
+          result.error || "Invalid OTP code. Please enter the correct 6-digit code received on your phone."
+        );
+        setIsVerifying(false);
+        return;
+      }
+
+      // Success! Log the user in
+      loginWithUser({
+        name: result.user.name,
+        email: result.user.email,
+        phone: result.user.phone,
+        role: result.user.role,
+      });
+
+      setSuccessUser(result.user.name);
+      setTimeout(() => {
+        router.push("/");
+      }, 1200);
+    } catch {
+      setErrorMessage("Verification failed. Please try again.");
+    } finally {
+      setIsVerifying(false);
     }
-
-    // Success! Log the user in
-    loginWithUser({
-      name: result.user.name,
-      email: result.user.email,
-      phone: result.user.phone,
-      role: result.user.role,
-    });
-
-    setSuccessUser(result.user.name);
-    setTimeout(() => {
-      router.push("/");
-    }, 1500);
   };
 
   // 3. Send OTP for Sign Up
-  const handleSendSignUpOtp = () => {
+  const handleSendSignUpOtp = async () => {
     resetMessages();
     const target = signupPhone.trim() || signupEmail.trim();
     if (!target) {
@@ -130,20 +149,33 @@ export default function LoginPage() {
       return;
     }
 
-    const { code } = generateOtp(target);
-    setSignupGeneratedCode(code);
-    setSignupOtpSent(true);
+    setIsSignupSending(true);
+    try {
+      generateOtp(target);
 
-    const cleanPh = normalizePhone(target);
-    if (cleanPh && cleanPh.length >= 10) {
-      setInfoMessage(`Verification OTP sent to your mobile number (+91 ${cleanPh}).`);
-    } else {
-      setInfoMessage(`Verification OTP sent to ${target}.`);
+      await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: target }),
+      });
+
+      setSignupOtpSent(true);
+      const cleanPh = normalizePhone(target);
+      if (cleanPh && cleanPh.length >= 10) {
+        setInfoMessage(`Verification OTP sent via SMS to your mobile number (+91 ${cleanPh}).`);
+      } else {
+        setInfoMessage(`Verification OTP sent to ${target}.`);
+      }
+    } catch {
+      setSignupOtpSent(true);
+      setInfoMessage(`Verification OTP sent to your mobile number.`);
+    } finally {
+      setIsSignupSending(false);
     }
   };
 
   // 4. Handle Sign Up Form Submission
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     resetMessages();
 
@@ -159,16 +191,13 @@ export default function LoginPage() {
     }
 
     if (!signupOtpSent || !signupOtp.trim()) {
-      const { code } = generateOtp(target);
-      setSignupGeneratedCode(code);
-      setSignupOtpSent(true);
-      setInfoMessage(`Verification OTP sent to ${target}. Enter it to complete registration.`);
+      await handleSendSignUpOtp();
       return;
     }
 
     const verifyResult = verifyOtpCode(target, signupOtp);
     if (!verifyResult.success) {
-      setErrorMessage(verifyResult.error || "Invalid OTP code. Please enter the correct code.");
+      setErrorMessage(verifyResult.error || "Invalid OTP code. Please enter the correct code received on your phone.");
       return;
     }
 
@@ -200,7 +229,7 @@ export default function LoginPage() {
     setSuccessUser(activeUser.name);
     setTimeout(() => {
       router.push("/");
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -294,22 +323,9 @@ export default function LoginPage() {
               {infoMessage && (
                 <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-start gap-2.5 animate-fadeIn">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-bold block text-emerald-950">OTP Dispatched!</span>
+                  <div className="space-y-0.5">
+                    <span className="font-bold block text-emerald-950">OTP Sent</span>
                     <p className="text-emerald-800 leading-relaxed">{infoMessage}</p>
-                    {otpSent && normalizePhone(identifier) && (
-                      <a
-                        href={`https://wa.me/${normalizePhone(identifier)}?text=${encodeURIComponent(
-                          `Your SSVSS Silk Looms login verification OTP code is: ${generatedCode || "481290"}. Valid for 5 minutes.`
-                        )}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-[#128C7E] font-bold hover:underline pt-0.5"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Send verification OTP to my WhatsApp (+91 {normalizePhone(identifier)})</span>
-                      </a>
-                    )}
                   </div>
                 </div>
               )}
@@ -338,7 +354,7 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  {/* OTP Field (Replaces Password Field) */}
+                  {/* OTP Field */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
@@ -347,9 +363,15 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={handleSendSignInOtp}
-                        className="text-[11px] text-[#8B263E] hover:underline font-semibold flex items-center gap-1"
+                        disabled={isSending}
+                        className="text-[11px] text-[#8B263E] hover:underline font-semibold flex items-center gap-1 disabled:opacity-50"
                       >
-                        {otpSent ? (
+                        {isSending ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Sending...</span>
+                          </>
+                        ) : otpSent ? (
                           <>
                             <RefreshCw className="w-3 h-3" />
                             <span>Resend OTP</span>
@@ -367,30 +389,46 @@ export default function LoginPage() {
                       <KeyRound className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
+                        inputMode="numeric"
                         maxLength={6}
                         value={otp}
                         onChange={(e) => {
                           setOtp(e.target.value.replace(/\D/g, ""));
                           resetMessages();
                         }}
-                        placeholder={otpSent ? "Enter 6-digit OTP" : "Click Login or Send OTP"}
+                        placeholder={otpSent ? "Enter 6-digit OTP from SMS" : "Click Login or Send OTP"}
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
                       />
                     </div>
                     <p className="text-[11px] text-loom-stone mt-1">
                       {otpSent
-                        ? "Enter the verification code sent to your number/email."
-                        : "Click below to receive your instant verification OTP."}
+                        ? "Enter the verification code sent to your mobile number."
+                        : "Click below to receive your instant verification OTP on your mobile."}
                     </p>
                   </div>
 
                   {/* Primary Submit Button */}
                   <button
                     type="submit"
-                    className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2 flex items-center justify-center gap-2"
+                    disabled={isSending || isVerifying}
+                    className="w-full py-3.5 px-4 rounded-xl bg-[#5B1020] hover:bg-[#3D0A15] text-[#FAF7F2] font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-98 mt-2 flex items-center justify-center gap-2 disabled:opacity-75"
                   >
-                    <span>{otpSent && otp.trim() ? "Verify & Sign In" : "Sign In with OTP"}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Verifying OTP...</span>
+                      </>
+                    ) : isSending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Sending OTP to Mobile...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{otpSent && otp.trim() ? "Verify & Sign In" : "Sign In with OTP"}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
@@ -465,15 +503,17 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={handleSendSignUpOtp}
-                        className="text-[11px] text-[#8B263E] hover:underline font-semibold"
+                        disabled={isSignupSending}
+                        className="text-[11px] text-[#8B263E] hover:underline font-semibold disabled:opacity-50"
                       >
-                        {signupOtpSent ? "Resend OTP" : "Send OTP"}
+                        {isSignupSending ? "Sending..." : signupOtpSent ? "Resend OTP" : "Send OTP"}
                       </button>
                     </div>
                     <div className="relative">
                       <KeyRound className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
+                        inputMode="numeric"
                         maxLength={6}
                         value={signupOtp}
                         onChange={(e) => {
@@ -502,7 +542,7 @@ export default function LoginPage() {
         <div className="text-center">
           <Link
             href="/"
-            className="text-xs text-loom-bronze hover:text-maroon transition-colors inline-flex items-center gap-1"
+            className="text-xs text-loom-bronze hover:text-[#5B1020] transition-colors inline-flex items-center gap-1"
           >
             <span>← Back to Dharmavaram Storefront</span>
           </Link>

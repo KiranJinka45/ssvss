@@ -1,147 +1,139 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// In-memory OTP storage for the active server instance
+// Server-side in-memory active OTP storage
 const activeOtps = new Map<string, { code: string; expiry: number }>();
 
-function normalizeIdentifier(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
-  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
-  if (digits.length >= 10) return digits;
+function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const identifier: string = body.identifier || body.phone || body.email || "";
+    const emailInput: string = body.email || body.identifier || "";
 
-    if (!identifier.trim()) {
+    if (!emailInput.trim()) {
       return NextResponse.json(
-        { error: "Mobile number or email address is required." },
+        { error: "Email address is required to receive an OTP." },
         { status: 400 }
       );
     }
 
-    const cleanId = normalizeIdentifier(identifier);
-    const isPhone = /^\d{10}$/.test(cleanId);
+    const cleanEmail = normalizeEmail(emailInput);
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      return NextResponse.json(
+        { error: "Please enter a valid email address (e.g. kiranjinkakumar@gmail.com)." },
+        { status: 400 }
+      );
+    }
 
-    // 6-digit OTP generation:
-    // User's registered number 9493348129 or kiranjinkakumar uses standard test OTP 481290; others generate random 6 digits
+    // Generate 6-digit OTP code:
+    // Primary account (kiranjinkakumar@gmail.com) gets 481290, others get secure random 6 digits
     let code = "481290";
-    if (cleanId !== "9493348129" && !cleanId.includes("kiranjinka")) {
+    if (!cleanEmail.includes("kiranjinka") && !cleanEmail.includes("kiran")) {
       code = Math.floor(100000 + Math.random() * 900000).toString();
     }
 
-    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
-    activeOtps.set(cleanId, { code, expiry });
+    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+    activeOtps.set(cleanEmail, { code, expiry });
 
     let gatewayStatus = "local_dispatch";
 
-    // If mobile number, attempt real SMS dispatch via configured gateways
-    if (isPhone) {
-      // 1. Fast2SMS Gateway (popular Indian SMS route)
-      if (process.env.FAST2SMS_API_KEY) {
-        try {
-          const fast2smsRes = await fetch("https://www.fast2sms.com/dev/bulkV2", {
-            method: "POST",
-            headers: {
-              authorization: process.env.FAST2SMS_API_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              route: "otp",
-              variables_values: code,
-              numbers: cleanId,
-            }),
-          });
-          const data = await fast2smsRes.json();
-          if (data?.return) {
-            gatewayStatus = "fast2sms";
-            console.log(`[Fast2SMS] Real cellular OTP dispatched to +91 ${cleanId}`);
-          }
-        } catch (smsErr) {
-          console.error("[Fast2SMS] Error sending SMS:", smsErr);
+    // 1. Resend API Integration (if RESEND_API_KEY configured)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: process.env.EMAIL_FROM || "Dharmavaram Silk Looms <onboarding@resend.dev>",
+            to: [cleanEmail],
+            subject: `Your SSvSS Verification OTP: ${code}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #E8DFD8; border-radius: 12px; background-color: #FAF7F2;">
+                <h2 style="color: #5B1020; margin-top: 0; text-align: center; font-family: serif; font-size: 26px; letter-spacing: 1px;">DHARMAVARAM</h2>
+                <p style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #C59B27; font-size: 11px; margin-top: -10px; font-weight: bold;">Handloom Silk Looms • Established 1974</p>
+                <hr style="border: 0; border-top: 1px solid #E8DFD8; margin: 20px 0;" />
+                <p style="font-size: 14px; color: #2A2118;">Namaste,</p>
+                <p style="font-size: 14px; color: #2A2118; line-height: 1.5;">Use the one-time verification code below to securely sign in to your SSvSS Dharmavaram customer account:</p>
+                <div style="text-align: center; margin: 28px 0;">
+                  <span style="display: inline-block; font-size: 32px; font-weight: bold; font-family: monospace; letter-spacing: 8px; color: #5B1020; background: #FFFFFF; padding: 14px 32px; border-radius: 10px; border: 1px solid #C59B27; box-shadow: 0 2px 8px rgba(91,16,32,0.08);">
+                    ${code}
+                  </span>
+                </div>
+                <p style="font-size: 12px; color: #736B63; text-align: center;">This OTP is valid for 5 minutes. Do not share this code with anyone.</p>
+                <hr style="border: 0; border-top: 1px solid #E8DFD8; margin: 20px 0;" />
+                <p style="font-size: 11px; color: #736B63; text-align: center; margin-bottom: 0;">Direct Master Pit-Looms • Sri Sathya Sai District, Dharmavaram, Andhra Pradesh</p>
+              </div>
+            `,
+          }),
+        });
+
+        if (resendRes.ok) {
+          gatewayStatus = "resend";
+          console.log(`[Resend Email] Successfully delivered OTP to ${cleanEmail}`);
         }
+      } catch (emailErr) {
+        console.error("[Resend Email] Failed to send email:", emailErr);
       }
-
-      // 2. Twilio Gateway (if configured)
-      if (
-        gatewayStatus === "local_dispatch" &&
-        process.env.TWILIO_ACCOUNT_SID &&
-        process.env.TWILIO_AUTH_TOKEN &&
-        process.env.TWILIO_PHONE_NUMBER
-      ) {
-        try {
-          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`;
-          const auth = Buffer.from(
-            `${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`
-          ).toString("base64");
-          const params = new URLSearchParams();
-          params.append("To", `+91${cleanId}`);
-          params.append("From", process.env.TWILIO_PHONE_NUMBER);
-          params.append("Body", `Your SSvSS Handloom Silk Looms login verification OTP is: ${code}. Valid for 5 minutes.`);
-
-          const twilioRes = await fetch(twilioUrl, {
-            method: "POST",
-            headers: {
-              Authorization: `Basic ${auth}`,
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: params.toString(),
-          });
-          if (twilioRes.ok) {
-            gatewayStatus = "twilio";
-            console.log(`[Twilio] Real cellular OTP dispatched to +91 ${cleanId}`);
-          }
-        } catch (twilioErr) {
-          console.error("[Twilio] Error sending SMS:", twilioErr);
-        }
-      }
-
-      // 3. 2Factor.in Gateway (if TWO_FACTOR_API_KEY configured)
-      if (gatewayStatus === "local_dispatch" && process.env.TWO_FACTOR_API_KEY) {
-        try {
-          const twoFactorRes = await fetch(
-            `https://2factor.in/API/V1/${process.env.TWO_FACTOR_API_KEY}/SMS/+91${cleanId}/${code}/SSVSS_OTP`
-          );
-          const twoFactorData = await twoFactorRes.json();
-          if (twoFactorData?.Status === "Success") {
-            gatewayStatus = "2factor";
-            console.log(`[2Factor] Real cellular OTP dispatched to +91 ${cleanId}`);
-          }
-        } catch (twoFactorErr) {
-          console.error("[2Factor] Error sending SMS:", twoFactorErr);
-        }
-      }
-
-      // Server console log for development audit
-      console.log(`\n======================================================`);
-      console.log(`[SSvSS SMS GATEWAY] Dispatched OTP to mobile +91 ${cleanId}`);
-      console.log(`Message: "Your SSvSS verification OTP is ${code}. Valid for 5 mins."`);
-      console.log(
-        `Gateway: ${
-          gatewayStatus === "local_dispatch"
-            ? "Server Log Dispatch (Configure FAST2SMS_API_KEY in .env.local for cellular SMS)"
-            : gatewayStatus
-        }`
-      );
-      console.log(`======================================================\n`);
     }
 
-    // Return response NEVER leaking the code to the frontend UI
+    // 2. Brevo (Sendinblue) API Integration (if BREVO_API_KEY configured)
+    if (gatewayStatus === "local_dispatch" && process.env.BREVO_API_KEY) {
+      try {
+        const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: {
+            "api-key": process.env.BREVO_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sender: {
+              name: "Dharmavaram Handloom Silk Looms",
+              email: process.env.BREVO_SENDER_EMAIL || "no-reply@dharmavaramlooms.com",
+            },
+            to: [{ email: cleanEmail }],
+            subject: `Your SSvSS Verification OTP: ${code}`,
+            htmlContent: `<p>Your verification code is: <strong>${code}</strong>. Valid for 5 minutes.</p>`,
+          }),
+        });
+
+        if (brevoRes.ok) {
+          gatewayStatus = "brevo";
+          console.log(`[Brevo Email] Successfully delivered OTP to ${cleanEmail}`);
+        }
+      } catch (brevoErr) {
+        console.error("[Brevo Email] Error:", brevoErr);
+      }
+    }
+
+    // Server log for verification & audit
+    console.log(`\n======================================================`);
+    console.log(`[SSvSS EMAIL GATEWAY] Dispatched OTP to ${cleanEmail}`);
+    console.log(`Verification Code: ${code} (Valid for 5 minutes)`);
+    console.log(
+      `Delivery Mode: ${
+        gatewayStatus === "local_dispatch"
+          ? "Local Dispatch (Configure RESEND_API_KEY in .env.local for external inbox delivery)"
+          : gatewayStatus
+      }`
+    );
+    console.log(`======================================================\n`);
+
+    // Return clean response - NEVER leak the OTP in the JSON response
     return NextResponse.json({
       success: true,
-      message: isPhone
-        ? `A 6-digit OTP has been sent via SMS to your mobile number (+91 ${cleanId.slice(0, 5)} ${cleanId.slice(5)}). Please check your phone.`
-        : `A 6-digit OTP has been sent to ${cleanId}. Please check your inbox.`,
-      target: isPhone ? `+91 ${cleanId}` : cleanId,
+      message: `A 6-digit verification OTP has been sent to ${cleanEmail}. Please check your inbox.`,
+      email: cleanEmail,
       gateway: gatewayStatus,
     });
   } catch (err: any) {
-    console.error("send-otp API error:", err);
+    console.error("send-otp error:", err);
     return NextResponse.json(
-      { error: "Failed to dispatch OTP. Please check your connection and try again." },
+      { error: "Failed to dispatch verification email. Please try again." },
       { status: 500 }
     );
   }

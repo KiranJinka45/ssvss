@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   User,
-  Phone,
   Mail,
   KeyRound,
   ArrowRight,
@@ -14,31 +13,29 @@ import {
   RefreshCw,
   Send,
   Loader2,
-  MessageCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   generateOtp,
   verifyOtpCode,
   registerNewUser,
-  normalizePhone,
+  normalizeEmail,
 } from "@/lib/authUsers";
 
 export default function LoginPage() {
   const router = useRouter();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
 
-  // Sign In states
-  const [identifier, setIdentifier] = useState("09493348129");
+  // Sign In states (Email OTP Only)
+  const [email, setEmail] = useState("kiranjinkakumar@gmail.com");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [activeOtpCode, setActiveOtpCode] = useState("481290");
 
   // Sign Up states
   const [signupName, setSignupName] = useState("");
-  const [signupPhone, setSignupPhone] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupOtp, setSignupOtp] = useState("");
   const [signupOtpSent, setSignupOtpSent] = useState(false);
@@ -62,41 +59,37 @@ export default function LoginPage() {
     setInfoMessage(null);
   };
 
-  // 1. Send OTP for Sign In (Dispatches to mobile number)
+  // 1. Send OTP for Sign In (Dispatches to user email)
   const handleSendSignInOtp = async () => {
     resetMessages();
-    if (!identifier.trim()) {
-      setErrorMessage("Please enter your mobile number or email address.");
+    const cleanMail = normalizeEmail(email);
+
+    if (!cleanMail || !cleanMail.includes("@")) {
+      setErrorMessage("Please enter a valid email address to receive your OTP.");
       return;
     }
 
     setIsSending(true);
     try {
       // Prime local storage verification cache
-      const { code } = generateOtp(identifier);
-      setActiveOtpCode(code);
+      generateOtp(cleanMail);
 
-      // Call server-side SMS dispatch API
+      // Call server-side Email dispatch API
       await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier }),
+        body: JSON.stringify({ email: cleanMail }),
       });
 
       setOtpSent(true);
-      const cleanPh = normalizePhone(identifier);
-      if (cleanPh && cleanPh.length >= 10) {
-        setInfoMessage(
-          `A 6-digit OTP has been sent via SMS to your mobile number (+91 ${cleanPh}). Please enter it below to sign in.`
-        );
-      } else {
-        setInfoMessage(
-          `A 6-digit OTP has been sent to ${identifier}. Please check your inbox and enter it below.`
-        );
-      }
+      setInfoMessage(
+        `A 6-digit verification OTP has been sent to your email (${cleanMail}). Please check your inbox or spam folder.`
+      );
     } catch {
       setOtpSent(true);
-      setInfoMessage(`A 6-digit OTP has been sent to your mobile number. Please check your phone.`);
+      setInfoMessage(
+        `A 6-digit verification OTP has been sent to ${cleanMail}. Please check your inbox.`
+      );
     } finally {
       setIsSending(false);
     }
@@ -107,8 +100,9 @@ export default function LoginPage() {
     e.preventDefault();
     resetMessages();
 
-    if (!identifier.trim()) {
-      setErrorMessage("Please enter your mobile number or email address.");
+    const cleanMail = normalizeEmail(email);
+    if (!cleanMail || !cleanMail.includes("@")) {
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
@@ -121,10 +115,13 @@ export default function LoginPage() {
     // Verify entered OTP
     setIsVerifying(true);
     try {
-      const result = verifyOtpCode(identifier, otp);
+      const result = verifyOtpCode(cleanMail, otp);
+
+      // If OTP is wrong: strictly prevent login and show clear error
       if (!result.success || !result.user) {
         setErrorMessage(
-          result.error || "Invalid OTP code. Please enter the correct 6-digit code received on your phone."
+          result.error ||
+            "Incorrect OTP code! Please enter the exact 6-digit verification code sent to your email."
         );
         setIsVerifying(false);
         return;
@@ -152,32 +149,27 @@ export default function LoginPage() {
   // 3. Send OTP for Sign Up
   const handleSendSignUpOtp = async () => {
     resetMessages();
-    const target = signupPhone.trim() || signupEmail.trim();
-    if (!target) {
-      setErrorMessage("Please enter your mobile number or email address to receive an OTP.");
+    const cleanMail = normalizeEmail(signupEmail);
+    if (!cleanMail || !cleanMail.includes("@")) {
+      setErrorMessage("Please enter a valid email address to receive your OTP.");
       return;
     }
 
     setIsSignupSending(true);
     try {
-      generateOtp(target);
+      generateOtp(cleanMail);
 
       await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: target }),
+        body: JSON.stringify({ email: cleanMail }),
       });
 
       setSignupOtpSent(true);
-      const cleanPh = normalizePhone(target);
-      if (cleanPh && cleanPh.length >= 10) {
-        setInfoMessage(`Verification OTP sent via SMS to your mobile number (+91 ${cleanPh}).`);
-      } else {
-        setInfoMessage(`Verification OTP sent to ${target}.`);
-      }
+      setInfoMessage(`Verification OTP sent to ${cleanMail}. Please check your inbox.`);
     } catch {
       setSignupOtpSent(true);
-      setInfoMessage(`Verification OTP sent to your mobile number.`);
+      setInfoMessage(`Verification OTP sent to your email.`);
     } finally {
       setIsSignupSending(false);
     }
@@ -193,9 +185,9 @@ export default function LoginPage() {
       return;
     }
 
-    const target = signupPhone.trim() || signupEmail.trim();
-    if (!target) {
-      setErrorMessage("Please enter your mobile number or email address.");
+    const cleanMail = normalizeEmail(signupEmail);
+    if (!cleanMail || !cleanMail.includes("@")) {
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
@@ -204,25 +196,28 @@ export default function LoginPage() {
       return;
     }
 
-    const verifyResult = verifyOtpCode(target, signupOtp);
+    const verifyResult = verifyOtpCode(cleanMail, signupOtp);
     if (!verifyResult.success) {
-      setErrorMessage(verifyResult.error || "Invalid OTP code. Please enter the correct code received on your phone.");
+      setErrorMessage(
+        verifyResult.error ||
+          "Incorrect OTP code! Please enter the exact 6-digit code received in your email."
+      );
       return;
     }
 
     // Register user
     const regResult = registerNewUser({
       name: signupName,
-      phone: signupPhone,
-      email: signupEmail,
-      password: "", // Passwordless
+      email: cleanMail,
+      phone: "",
+      password: "",
     });
 
     const activeUser = regResult.user || {
       id: `usr_${Date.now()}`,
       name: signupName,
-      email: signupEmail,
-      phone: signupPhone,
+      email: cleanMail,
+      phone: "",
       passwordHash: "",
       role: "customer" as const,
       createdAt: new Date().toISOString(),
@@ -301,7 +296,7 @@ export default function LoginPage() {
                   Welcome, {successUser}!
                 </h3>
                 <p className="text-xs text-loom-stone mt-1">
-                  You are now signed in. Redirecting you to the storefront...
+                  You are now signed in. Unlocking the storefront...
                 </p>
               </div>
 
@@ -332,55 +327,38 @@ export default function LoginPage() {
               {infoMessage && (
                 <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-start gap-2.5 animate-fadeIn">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="space-y-1.5 flex-1">
-                    <div>
-                      <span className="font-bold block text-emerald-950">OTP Dispatched</span>
-                      <p className="text-emerald-800 leading-relaxed">{infoMessage}</p>
-                    </div>
-                    {otpSent && normalizePhone(identifier) && (
-                      <div className="pt-0.5">
-                        <a
-                          href={`https://wa.me/91${normalizePhone(identifier)}?text=${encodeURIComponent(
-                            `Your SSvSS Silk Looms login verification OTP is: ${activeOtpCode}. Valid for 5 minutes.`
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs transition-all shadow-sm"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          <span>Didn&apos;t get SMS? Send OTP to WhatsApp (+91 {normalizePhone(identifier)})</span>
-                        </a>
-                      </div>
-                    )}
+                  <div className="space-y-0.5">
+                    <span className="font-bold block text-emerald-950">OTP Dispatched</span>
+                    <p className="text-emerald-800 leading-relaxed">{infoMessage}</p>
                   </div>
                 </div>
               )}
 
-              {/* SIGN IN TAB */}
+              {/* SIGN IN TAB (EMAIL OTP ONLY) */}
               {tab === "signin" && (
                 <form onSubmit={handleSignInSubmit} className="space-y-4">
-                  {/* Mobile or Email */}
+                  {/* Email Address */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
-                      Mobile Number or Email
+                      Email Address
                     </label>
                     <div className="relative">
-                      <User className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Mail className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
-                        type="text"
+                        type="email"
                         required
-                        value={identifier}
+                        value={email}
                         onChange={(e) => {
-                          setIdentifier(e.target.value);
+                          setEmail(e.target.value);
                           resetMessages();
                         }}
-                        placeholder="e.g. 09493348129 or kiranjinkakumar@gmail.com"
+                        placeholder="e.g. kiranjinkakumar@gmail.com"
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
                       />
                     </div>
                   </div>
 
-                  {/* OTP Field */}
+                  {/* 6-Digit OTP Field */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-bold uppercase tracking-wider text-loom-charcoal">
@@ -422,14 +400,14 @@ export default function LoginPage() {
                           setOtp(e.target.value.replace(/\D/g, ""));
                           resetMessages();
                         }}
-                        placeholder={otpSent ? "Enter 6-digit OTP from SMS" : "Click Login or Send OTP"}
+                        placeholder={otpSent ? "Enter 6-digit OTP from email" : "Click Send OTP to receive code"}
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
                       />
                     </div>
                     <p className="text-[11px] text-loom-stone mt-1">
                       {otpSent
-                        ? "Enter the verification code sent to your mobile number."
-                        : "Click below to receive your instant verification OTP on your mobile."}
+                        ? "Enter the verification code sent to your email inbox."
+                        : "Click Send OTP to receive your instant verification code via email."}
                     </p>
                   </div>
 
@@ -447,11 +425,11 @@ export default function LoginPage() {
                     ) : isSending ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Sending OTP to Mobile...</span>
+                        <span>Sending OTP to Email...</span>
                       </>
                     ) : (
                       <>
-                        <span>{otpSent && otp.trim() ? "Verify & Sign In" : "Sign In with OTP"}</span>
+                        <span>{otpSent && otp.trim() ? "Verify & Sign In" : "Send Email OTP"}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -484,31 +462,13 @@ export default function LoginPage() {
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
-                      Mobile Number / WhatsApp
-                    </label>
-                    <div className="relative">
-                      <Phone className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="tel"
-                        value={signupPhone}
-                        onChange={(e) => {
-                          setSignupPhone(e.target.value);
-                          resetMessages();
-                        }}
-                        placeholder="+91 94933 48129"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
                       Email Address
                     </label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="email"
+                        required
                         value={signupEmail}
                         onChange={(e) => {
                           setSignupEmail(e.target.value);
@@ -546,7 +506,7 @@ export default function LoginPage() {
                           setSignupOtp(e.target.value.replace(/\D/g, ""));
                           resetMessages();
                         }}
-                        placeholder="Enter 6-digit OTP"
+                        placeholder="Enter 6-digit OTP from email"
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
                       />
                     </div>
@@ -565,8 +525,12 @@ export default function LoginPage() {
         </div>
 
         {/* Trust Note */}
-        <div className="text-center">
-          <p className="text-[11px] text-loom-stone tracking-wide">
+        <div className="text-center space-y-1">
+          <p className="text-[11px] text-loom-stone tracking-wide flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#C59B27]" />
+            <span>Secure 100% Passwordless Email Verification</span>
+          </p>
+          <p className="text-[10px] text-loom-stone/80">
             Direct Master Pit-Looms • Sri Sathya Sai District, Dharmavaram
           </p>
         </div>

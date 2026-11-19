@@ -225,7 +225,7 @@ export function verifyOtpCode(
     }
 
     if (code !== enteredCode.trim()) {
-      return { success: false, error: "Invalid OTP code! Please enter the correct 6-digit verification code." };
+      return { success: false, error: "Incorrect OTP code! Please enter the exact 6-digit verification code sent to your email." };
     }
 
     // OTP verified! Find user or create customer profile

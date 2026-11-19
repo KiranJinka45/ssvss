@@ -187,9 +187,10 @@ export function registerNewUser(data: {
  */
 export function generateOtp(identifier: string): { code: string; expiry: number } {
   const cleanPhone = normalizePhone(identifier);
-  // For phone ending with 48129 (like 9493348129), deterministic easy OTP or random 6-digit
+  const cleanEmail = normalizeEmail(identifier);
+  // For user's account (9493348129 or kiranjinkakumar), reliable code 481290, otherwise random 6-digit
   let code = "481290";
-  if (!cleanPhone.includes("9493348129")) {
+  if (!cleanPhone.includes("9493348129") && !cleanEmail.includes("kiranjinka")) {
     code = Math.floor(100000 + Math.random() * 900000).toString();
   }
   const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes

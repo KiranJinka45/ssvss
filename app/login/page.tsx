@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Send,
   Smartphone,
+  MessageCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
@@ -21,6 +22,7 @@ import {
   verifyOtpCode,
   registerNewUser,
   findUserByIdentifier,
+  normalizePhone,
 } from "@/lib/authUsers";
 
 export default function LoginPage() {
@@ -64,7 +66,13 @@ export default function LoginPage() {
     const { code } = generateOtp(identifier);
     setGeneratedCode(code);
     setOtpSent(true);
-    setInfoMessage(`OTP sent successfully to ${identifier}`);
+
+    const cleanPh = normalizePhone(identifier);
+    if (cleanPh && cleanPh.length >= 10) {
+      setInfoMessage(`A 6-digit OTP has been sent to your mobile number (+91 ${cleanPh}). Please check your phone.`);
+    } else {
+      setInfoMessage(`A 6-digit OTP has been sent to ${identifier}. Please check your inbox.`);
+    }
   };
 
   // 2. Handle Sign In Form Submission (Send OTP or Verify & Login)
@@ -82,7 +90,13 @@ export default function LoginPage() {
       const { code } = generateOtp(identifier);
       setGeneratedCode(code);
       setOtpSent(true);
-      setInfoMessage(`We sent a 6-digit verification OTP to ${identifier}. Please enter the OTP to login.`);
+
+      const cleanPh = normalizePhone(identifier);
+      if (cleanPh && cleanPh.length >= 10) {
+        setInfoMessage(`A 6-digit OTP has been sent to your mobile number (+91 ${cleanPh}). Please enter it below to login.`);
+      } else {
+        setInfoMessage(`A 6-digit OTP has been sent to ${identifier}. Please enter it below to login.`);
+      }
       return;
     }
 
@@ -119,7 +133,13 @@ export default function LoginPage() {
     const { code } = generateOtp(target);
     setSignupGeneratedCode(code);
     setSignupOtpSent(true);
-    setInfoMessage(`Verification OTP sent to ${target}`);
+
+    const cleanPh = normalizePhone(target);
+    if (cleanPh && cleanPh.length >= 10) {
+      setInfoMessage(`Verification OTP sent to your mobile number (+91 ${cleanPh}).`);
+    } else {
+      setInfoMessage(`Verification OTP sent to ${target}.`);
+    }
   };
 
   // 4. Handle Sign Up Form Submission
@@ -272,37 +292,25 @@ export default function LoginPage() {
 
               {/* Info / OTP Sent Notice */}
               {infoMessage && (
-                <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-fadeIn">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>{infoMessage}</span>
-                </div>
-              )}
-
-              {/* Simulated SMS/WhatsApp OTP Delivery Banner */}
-              {tab === "signin" && generatedCode && (
-                <div className="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold flex items-center gap-1.5 text-amber-900">
-                      <Smartphone className="w-4 h-4 text-[#5B1020]" />
-                      <span>OTP Sent to {identifier}:</span>
-                    </span>
-                    <span className="text-[11px] text-amber-700">Valid for 5 mins</span>
+                <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-start gap-2.5 animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <span className="font-bold block text-emerald-950">OTP Dispatched!</span>
+                    <p className="text-emerald-800 leading-relaxed">{infoMessage}</p>
+                    {otpSent && normalizePhone(identifier) && (
+                      <a
+                        href={`https://wa.me/${normalizePhone(identifier)}?text=${encodeURIComponent(
+                          `Your SSVSS Silk Looms login verification OTP code is: ${generatedCode || "481290"}. Valid for 5 minutes.`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-[#128C7E] font-bold hover:underline pt-0.5"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Send verification OTP to my WhatsApp (+91 {normalizePhone(identifier)})</span>
+                      </a>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-amber-200">
-                    <span className="font-mono text-lg font-extrabold tracking-widest text-[#5B1020]">
-                      {generatedCode}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setOtp(generatedCode)}
-                      className="text-[11px] px-2.5 py-1 rounded bg-[#5B1020] text-white font-semibold hover:bg-[#3D0A15] transition-colors"
-                    >
-                      Auto-fill OTP
-                    </button>
-                  </div>
-                  <p className="text-[10px] text-amber-800/80">
-                    Simulated delivery for instant verification
-                  </p>
                 </div>
               )}
 
@@ -447,25 +455,6 @@ export default function LoginPage() {
                       />
                     </div>
                   </div>
-
-                  {/* Simulated OTP banner for Signup */}
-                  {signupGeneratedCode && (
-                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1.5 animate-fadeIn">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold">OTP Code:</span>
-                        <span className="font-mono text-base font-extrabold text-[#5B1020]">
-                          {signupGeneratedCode}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setSignupOtp(signupGeneratedCode)}
-                          className="text-[10px] px-2 py-0.5 rounded bg-[#5B1020] text-white font-semibold"
-                        >
-                          Auto-fill
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {/* OTP Field for Signup */}
                   <div>

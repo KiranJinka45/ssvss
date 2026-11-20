@@ -77,24 +77,24 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   const Icon = meta.icon;
 
   return (
-    <div className="py-12 bg-canvas">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="py-10 sm:py-14 bg-canvas min-h-screen">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
         {/* Editorial Collection Header */}
-        <div className="border-b border-loom-border/80 pb-10 mb-10">
+        <div className="border-b border-loom-border/80 pb-8 mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-100 text-gold-700 text-xs font-bold uppercase tracking-wider mb-3 border border-gold/40">
             <Icon className="w-3.5 h-3.5 text-gold" />
             <span>{meta.badge}</span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold text-maroon tracking-tight">
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-maroon tracking-tight">
             {meta.title}
           </h1>
 
-          <p className="text-sm sm:text-base text-loom-bronze max-w-3xl mt-3 leading-relaxed font-light">
+          <p className="text-xs sm:text-sm lg:text-base text-loom-bronze max-w-4xl mt-2 leading-relaxed font-light">
             {meta.description}
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-loom-border/50 text-xs text-loom-stone">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-loom-border/50 text-xs text-loom-stone">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-maroon">{sarees.length} Looms Ready</span>
               <span>•</span>
@@ -109,8 +109,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
           </div>
         </div>
 
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Product Cards Grid - Full Width Expansive */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
           {sarees.map((saree) => (
             <ProductCard key={saree.id} saree={saree} />
           ))}

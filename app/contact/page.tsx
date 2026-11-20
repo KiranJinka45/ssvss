@@ -51,7 +51,7 @@ export default function ContactPage() {
       </section>
 
       {/* Main Content Grid */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
+      <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 py-14 sm:py-18">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           {/* Left Column: Direct Contact Info & Video Call Card */}
           <div className="lg:col-span-5 space-y-6">

@@ -259,7 +259,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1A1A1A] font-sans pt-3 pb-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
         {/* Back Button on Left Side of Page */}
         <div className="mb-4">
           <Link

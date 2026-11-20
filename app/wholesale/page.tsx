@@ -10,7 +10,7 @@ export const metadata = {
 export default function WholesalePage() {
   return (
     <div className="py-12 bg-canvas min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
         <WholesalePortal />
       </div>
     </div>

@@ -9,11 +9,14 @@ import { CATALOG } from "@/data/catalog";
 import { Sparkles, ArrowRight, ShieldCheck, HeartHandshake, Star } from "lucide-react";
 
 export default function HomePage() {
-  // Select top 3 highlight sarees for home display (fits in 1 page like CategoryRail)
+  // Select top 6 highlight sarees for full-width 6-column showcase (like Image 7)
   const featuredSarees = [
     CATALOG[4], // Pure Silk Magenta Gandaberunda
     CATALOG[0], // Semi-Silk Kumkum Maroon
     CATALOG[8], // Handloom Bridal Vermillion Muhurtham
+    CATALOG[5], // Pure Silk Peacock Teal
+    CATALOG[1], // Semi-Silk Rama Green
+    CATALOG[10], // Handloom Korvai Scarlet Rose
   ];
 
   const testimonials = [
@@ -51,10 +54,10 @@ export default function HomePage() {
       {/* Category Rail (Tiers) */}
       <CategoryRail />
 
-      {/* Featured Master Loom Weaves */}
-      <section className="py-8 sm:py-10 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 sm:mb-6">
+      {/* Featured Master Loom Weaves - Full Width Showcase */}
+      <section className="py-8 sm:py-12 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
             <div>
               <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
                 Loom-Fresh Arrivals
@@ -62,8 +65,8 @@ export default function HomePage() {
               <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-maroon">
                 Master Weaver Creations
               </h2>
-              <p className="text-xs sm:text-sm text-loom-bronze mt-1 max-w-xl">
-                Individually woven over 4 to 22 days by master artisan families in Dharmavaram. Once sold, identical re-weaves require up to 3 weeks on the loom.
+              <p className="text-xs sm:text-sm text-loom-bronze mt-1 max-w-2xl">
+                Individually woven over 4 to 22 days by master artisan families in Dharmavaram. Direct from the pit-looms.
               </p>
             </div>
 
@@ -76,7 +79,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 xl:gap-5">
             {featuredSarees.map((saree) => (
               <ProductCard key={saree.id} saree={saree} />
             ))}
@@ -90,22 +93,22 @@ export default function HomePage() {
       {/* WhatsApp Video Call Banner */}
       <VideoCallBanner />
 
-      {/* Connoisseur Testimonials */}
-      <section className="py-20 bg-canvas border-b border-loom-border/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+      {/* Connoisseur Testimonials - Full Width */}
+      <section className="py-14 sm:py-20 bg-canvas border-b border-loom-border/60 overflow-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
             <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
               Verified Patron Stories
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-maroon">
               Treasured by Families Across India
             </h2>
-            <p className="text-sm text-loom-bronze mt-2">
+            <p className="text-xs sm:text-sm text-loom-bronze mt-2">
               From wedding muhurthams to temple festivals, read why connoisseurs choose direct Dharmavaram pit-loom authenticity.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {testimonials.map((test, idx) => (
               <div
                 key={idx}

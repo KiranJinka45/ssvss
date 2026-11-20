@@ -53,7 +53,7 @@ export default function AboutPage() {
       </section>
 
       {/* Main Story & Craft Section */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 py-14 sm:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           {/* Left: Authentic Loom Image */}
           <div className="lg:col-span-5 relative">
@@ -127,7 +127,7 @@ export default function AboutPage() {
 
       {/* Economics / Transparency Highlight */}
       <section className="bg-[#FAF3E8] border-y border-loom-border/70 py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-xs font-bold tracking-widest uppercase text-[#8B263E]">
               Ethical Weaver-to-Wardrobe
@@ -182,7 +182,7 @@ export default function AboutPage() {
       </section>
 
       {/* Call to Actions */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-6">
+      <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 py-16 text-center space-y-6">
         <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#5B1020]">
           Ready to Experience Authentic Dharmavaram Craftsmanship?
         </h2>

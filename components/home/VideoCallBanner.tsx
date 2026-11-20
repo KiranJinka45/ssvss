@@ -13,7 +13,7 @@ export function VideoCallBanner() {
       <div className="absolute top-0 right-0 w-80 h-80 bg-gold/10 rounded-full blur-2xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-gold/5 rounded-full blur-2xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-8 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/20 text-gold-400 text-xs font-semibold tracking-wider uppercase border border-gold/40">

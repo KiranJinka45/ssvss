@@ -44,8 +44,8 @@ export function CategoryRail() {
   ];
 
   return (
-    <section className="py-12 sm:py-16 bg-canvas overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-10 sm:py-14 bg-canvas overflow-hidden">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
           <div>
             <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
@@ -54,7 +54,7 @@ export function CategoryRail() {
             <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-maroon">
               Explore Our Dharmavaram Loom Collections
             </h2>
-            <p className="text-xs sm:text-sm text-loom-bronze mt-1.5 max-w-xl">
+            <p className="text-xs sm:text-sm text-loom-bronze mt-1.5 max-w-2xl">
               From high-velocity festive semi-silk to once-in-a-generation bridal heirloom weaves, every saree is priced transparently direct from our pit-looms.
             </p>
           </div>
@@ -67,7 +67,7 @@ export function CategoryRail() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 xl:gap-8">
           {categories.map((cat) => {
             const targetUrl = cat.isWholesale ? "/wholesale" : `/collections/${cat.slug}`;
 

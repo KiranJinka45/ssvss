@@ -50,9 +50,9 @@ export function LoomToWardrobe() {
   const current = comparisonData[activeTab];
 
   return (
-    <section id="loom-to-wardrobe" className="py-20 bg-canvas-surface border-b border-loom-border/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-12">
+    <section id="loom-to-wardrobe" className="py-14 sm:py-20 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
           <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-2">
             Total Price Transparency
           </span>
@@ -88,8 +88,8 @@ export function LoomToWardrobe() {
           </div>
         </div>
 
-        {/* Side-by-Side Breakdown Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        {/* Side-by-Side Breakdown Card - Full Width */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-10 w-full">
           {/* Traditional Showroom Route */}
           <div className="rounded-2xl bg-canvas p-6 sm:p-8 border border-red-200/60 shadow-sm relative overflow-hidden">
             <div className="flex items-center justify-between pb-5 border-b border-loom-border/60">

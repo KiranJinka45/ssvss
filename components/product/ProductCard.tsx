@@ -39,7 +39,7 @@ export function ProductCard({ saree }: ProductCardProps) {
   return (
     <div className="group relative flex flex-col rounded-2xl bg-canvas border border-loom-border/80 shadow-luxury hover:shadow-2xl transition-all duration-300 overflow-hidden">
       {/* Top Image Container */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-canvas-surface">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-canvas-surface">
         <Link href={`/product/${saree.sku.toLowerCase()}`} className="block w-full h-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -54,19 +54,19 @@ export function ProductCard({ saree }: ProductCardProps) {
 
         {/* Discount % Badge in Top-Left */}
         {savingsPercent > 0 && (
-          <div className="absolute top-2.5 left-2.5 bg-[#5B1020] text-[#FAF7F2] border border-[#C59B27]/70 shadow-md px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase z-10">
+          <div className="absolute top-2.5 left-2.5 bg-[#5B1020] text-[#FAF7F2] border border-[#C59B27]/70 shadow-md px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold tracking-wider uppercase z-10">
             <span>{savingsPercent}% OFF</span>
           </div>
         )}
 
         {/* Stock Status Badge if not in stock */}
         {isSoldOut && (
-          <div className="absolute top-2.5 right-12 bg-loom-charcoal/90 text-canvas px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">
+          <div className="absolute top-2.5 right-12 bg-loom-charcoal/90 text-canvas px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
             Sold Out
           </div>
         )}
         {isWeaverHold && (
-          <div className="absolute top-2.5 right-12 bg-gold-700/95 text-canvas px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">
+          <div className="absolute top-2.5 right-12 bg-gold-700/95 text-canvas px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
             On Loom Hold
           </div>
         )}
@@ -77,14 +77,14 @@ export function ProductCard({ saree }: ProductCardProps) {
             e.preventDefault();
             toggleWishlist(saree.sku);
           }}
-          className={`absolute top-2.5 right-2.5 p-2 rounded-full backdrop-blur-md transition-colors ${
+          className={`absolute top-2.5 right-2.5 p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-colors ${
             wishlisted
               ? "bg-maroon text-canvas"
               : "bg-white/80 hover:bg-white text-loom-charcoal"
           }`}
           aria-label="Wishlist Saree"
         >
-          <Heart className={`w-4 h-4 ${wishlisted ? "fill-canvas" : ""}`} />
+          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${wishlisted ? "fill-canvas" : ""}`} />
         </button>
 
         {/* Quick View Eye Icon on Hover (Text removed as requested) */}
@@ -101,42 +101,42 @@ export function ProductCard({ saree }: ProductCardProps) {
       </div>
 
       {/* Card Content & Pricing */}
-      <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between">
+      <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-loom-stone mb-1 font-medium">
-            <span>{saree.categoryName}</span>
-            <span className="text-gold-700 font-semibold">{saree.silkWeightGrams}g Weight</span>
+          <div className="flex items-center justify-between text-[10px] text-loom-stone mb-1 font-medium">
+            <span className="truncate">{saree.categoryName}</span>
+            <span className="text-gold-700 font-semibold shrink-0 ml-1">{saree.silkWeightGrams}g</span>
           </div>
 
           <Link href={`/product/${saree.sku.toLowerCase()}`}>
-            <h3 className="font-serif font-bold text-sm sm:text-base text-loom-charcoal group-hover:text-maroon transition-colors line-clamp-1">
+            <h3 className="font-serif font-bold text-xs sm:text-sm text-loom-charcoal group-hover:text-maroon transition-colors line-clamp-1">
               {saree.title}
             </h3>
           </Link>
 
-          <p className="text-[11px] sm:text-xs text-loom-bronze line-clamp-1 mt-0.5 font-light">
+          <p className="text-[10px] sm:text-[11px] text-loom-bronze line-clamp-1 mt-0.5 font-light">
             {saree.colorName} • {saree.borderType}
           </p>
         </div>
 
         {/* Pricing & Value Comparison */}
-        <div className="mt-2.5 pt-2 border-t border-loom-border/60">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <span className="text-base sm:text-lg font-bold text-maroon font-serif">
+        <div className="mt-2 pt-2 border-t border-loom-border/60">
+          <div className="flex items-baseline justify-between gap-1">
+            <div className="truncate">
+              <span className="text-sm sm:text-base font-bold text-maroon font-serif">
                 {formatINR(saree.price)}
               </span>
-              <span className="text-[11px] sm:text-xs text-loom-stone line-through ml-2">
+              <span className="text-[10px] sm:text-[11px] text-loom-stone line-through ml-1.5">
                 {formatINR(saree.showroomPrice)}
               </span>
             </div>
-            <span className="text-[10px] font-bold text-silk-emerald bg-silk-emeraldBg px-2 py-0.5 rounded-full border border-silk-emerald/30">
+            <span className="text-[9px] sm:text-[10px] font-bold text-silk-emerald bg-silk-emeraldBg px-1.5 py-0.5 rounded-full border border-silk-emerald/30 shrink-0">
               Save {savingsPercent}%
             </span>
           </div>
 
           {/* Action CTAs */}
-          <div className="mt-2.5 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -145,7 +145,7 @@ export function ProductCard({ saree }: ProductCardProps) {
                 setTimeout(() => setIsAdded(false), 2000);
               }}
               disabled={isSoldOut}
-              className={`w-full py-1.5 px-2 rounded-lg border transition-all text-xs font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-98 ${
+              className={`w-full py-1.5 px-1.5 rounded-md border transition-all text-[11px] font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 active:scale-98 ${
                 isAdded
                   ? "bg-emerald-700 border-emerald-700 text-white"
                   : "border-maroon text-maroon hover:bg-maroon hover:text-canvas"
@@ -153,7 +153,7 @@ export function ProductCard({ saree }: ProductCardProps) {
             >
               {isAdded ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-white" />
+                  <Check className="w-3 h-3 text-white" />
                   <span>Added ✓</span>
                 </>
               ) : (
@@ -165,10 +165,10 @@ export function ProductCard({ saree }: ProductCardProps) {
               href={quickWhatsAppUrl}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-1.5 px-2 rounded-lg bg-silk-emerald hover:bg-emerald-800 text-canvas text-xs font-semibold tracking-wide transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+              className="w-full py-1.5 px-1.5 rounded-md bg-silk-emerald hover:bg-emerald-800 text-canvas text-[11px] font-semibold tracking-wide transition-colors flex items-center justify-center gap-1 shadow-sm truncate"
               title="Order directly on WhatsApp with 0% extra gateway fees"
             >
-              <MessageCircle className="w-3.5 h-3.5 fill-canvas" />
+              <MessageCircle className="w-3 h-3 fill-canvas shrink-0" />
               <span>WhatsApp</span>
             </a>
           </div>

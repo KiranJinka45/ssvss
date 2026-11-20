@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: process.env.EMAIL_FROM || "Dharmavaram Silk Looms <onboarding@resend.dev>",
+            from: process.env.EMAIL_FROM || "SSvSS Silk Looms <onboarding@resend.dev>",
             to: [cleanEmail],
             subject: `Your SSvSS Verification OTP: ${code}`,
             html: `

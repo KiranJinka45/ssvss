@@ -55,9 +55,9 @@ export default function HomePage() {
       <CategoryRail />
 
       {/* Featured Master Loom Weaves */}
-      <section className="py-20 bg-canvas-surface border-b border-loom-border/60">
+      <section className="py-12 sm:py-16 bg-canvas-surface border-b border-loom-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
             <div>
               <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
                 Loom-Fresh Arrivals
@@ -79,7 +79,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {featuredSarees.map((saree) => (
               <ProductCard key={saree.id} saree={saree} />
             ))}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Heart, ShieldCheck, Sparkles, MessageCircle, Eye, Check } from "lucide-react";
+import { Heart, MessageCircle, Eye, Check } from "lucide-react";
 import { SareeSKU } from "@/data/catalog";
 import { formatINR } from "@/lib/pricing";
 import { generateOrderWhatsAppUrl } from "@/lib/whatsapp";
@@ -39,7 +39,7 @@ export function ProductCard({ saree }: ProductCardProps) {
   return (
     <div className="group relative flex flex-col rounded-2xl bg-canvas border border-loom-border/80 shadow-luxury hover:shadow-2xl transition-all duration-300 overflow-hidden">
       {/* Top Image Container */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-canvas-surface">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-canvas-surface">
         <Link href={`/product/${saree.sku.toLowerCase()}`} className="block w-full h-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -52,11 +52,10 @@ export function ProductCard({ saree }: ProductCardProps) {
         {/* Gradient Overlay on Hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-maroon-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Silk Mark Badge */}
-        {saree.silkMarkCertified && (
-          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider text-silk-emerald uppercase flex items-center gap-1 shadow-sm border border-silk-emerald/30">
-            <ShieldCheck className="w-3.5 h-3.5 text-silk-emerald" />
-            <span>Silk Mark</span>
+        {/* Discount % Badge in Top-Left */}
+        {savingsPercent > 0 && (
+          <div className="absolute top-2.5 left-2.5 bg-[#5B1020] text-[#FAF7F2] border border-[#C59B27]/70 shadow-md px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase z-10">
+            <span>{savingsPercent}% OFF</span>
           </div>
         )}
 

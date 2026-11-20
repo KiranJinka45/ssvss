@@ -39,7 +39,7 @@ export function ProductCard({ saree }: ProductCardProps) {
   return (
     <div className="group relative flex flex-col rounded-2xl bg-canvas border border-loom-border/80 shadow-luxury hover:shadow-2xl transition-all duration-300 overflow-hidden">
       {/* Top Image Container */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-canvas-surface">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-canvas-surface">
         <Link href={`/product/${saree.sku.toLowerCase()}`} className="block w-full h-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -61,12 +61,12 @@ export function ProductCard({ saree }: ProductCardProps) {
 
         {/* Stock Status Badge if not in stock */}
         {isSoldOut && (
-          <div className="absolute top-3 right-12 bg-loom-charcoal/90 text-canvas px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">
+          <div className="absolute top-2.5 right-12 bg-loom-charcoal/90 text-canvas px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">
             Sold Out
           </div>
         )}
         {isWeaverHold && (
-          <div className="absolute top-3 right-12 bg-gold-700/95 text-canvas px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">
+          <div className="absolute top-2.5 right-12 bg-gold-700/95 text-canvas px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase">
             On Loom Hold
           </div>
         )}
@@ -77,7 +77,7 @@ export function ProductCard({ saree }: ProductCardProps) {
             e.preventDefault();
             toggleWishlist(saree.sku);
           }}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-colors ${
+          className={`absolute top-2.5 right-2.5 p-2 rounded-full backdrop-blur-md transition-colors ${
             wishlisted
               ? "bg-maroon text-canvas"
               : "bg-white/80 hover:bg-white text-loom-charcoal"
@@ -87,45 +87,46 @@ export function ProductCard({ saree }: ProductCardProps) {
           <Heart className={`w-4 h-4 ${wishlisted ? "fill-canvas" : ""}`} />
         </button>
 
-        {/* Quick View Button on Hover */}
-        <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex gap-2">
+        {/* Quick View Eye Icon on Hover (Text removed as requested) */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
           <Link
             href={`/product/${saree.sku.toLowerCase()}`}
-            className="flex-1 py-2 px-3 rounded-lg bg-canvas/95 hover:bg-canvas text-maroon font-semibold text-xs tracking-wider uppercase text-center shadow-md flex items-center justify-center gap-1.5 transition-colors"
+            className="pointer-events-auto p-2.5 rounded-full bg-canvas/95 hover:bg-canvas text-maroon shadow-luxury hover:scale-110 transition-transform flex items-center justify-center border border-loom-border/60"
+            aria-label="View Saree Details"
+            title="View Details"
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Inspect Zari</span>
+            <Eye className="w-5 h-5 text-maroon" />
           </Link>
         </div>
       </div>
 
       {/* Card Content & Pricing */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between text-[11px] text-loom-stone mb-1 font-medium">
+          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-loom-stone mb-1 font-medium">
             <span>{saree.categoryName}</span>
             <span className="text-gold-700 font-semibold">{saree.silkWeightGrams}g Weight</span>
           </div>
 
           <Link href={`/product/${saree.sku.toLowerCase()}`}>
-            <h3 className="font-serif font-bold text-base text-loom-charcoal group-hover:text-maroon transition-colors line-clamp-1">
+            <h3 className="font-serif font-bold text-sm sm:text-base text-loom-charcoal group-hover:text-maroon transition-colors line-clamp-1">
               {saree.title}
             </h3>
           </Link>
 
-          <p className="text-xs text-loom-bronze line-clamp-1 mt-1 font-light">
+          <p className="text-[11px] sm:text-xs text-loom-bronze line-clamp-1 mt-0.5 font-light">
             {saree.colorName} • {saree.borderType}
           </p>
         </div>
 
         {/* Pricing & Value Comparison */}
-        <div className="mt-4 pt-3 border-t border-loom-border/60">
+        <div className="mt-2.5 pt-2 border-t border-loom-border/60">
           <div className="flex items-baseline justify-between">
             <div>
-              <span className="text-lg font-bold text-maroon font-serif">
+              <span className="text-base sm:text-lg font-bold text-maroon font-serif">
                 {formatINR(saree.price)}
               </span>
-              <span className="text-xs text-loom-stone line-through ml-2">
+              <span className="text-[11px] sm:text-xs text-loom-stone line-through ml-2">
                 {formatINR(saree.showroomPrice)}
               </span>
             </div>
@@ -135,7 +136,7 @@ export function ProductCard({ saree }: ProductCardProps) {
           </div>
 
           {/* Action CTAs */}
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-2.5 grid grid-cols-2 gap-2">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -144,7 +145,7 @@ export function ProductCard({ saree }: ProductCardProps) {
                 setTimeout(() => setIsAdded(false), 2000);
               }}
               disabled={isSoldOut}
-              className={`w-full py-2 px-2.5 rounded-lg border transition-all text-xs font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-98 ${
+              className={`w-full py-1.5 px-2 rounded-lg border transition-all text-xs font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-98 ${
                 isAdded
                   ? "bg-emerald-700 border-emerald-700 text-white"
                   : "border-maroon text-maroon hover:bg-maroon hover:text-canvas"
@@ -164,7 +165,7 @@ export function ProductCard({ saree }: ProductCardProps) {
               href={quickWhatsAppUrl}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-2 px-2.5 rounded-lg bg-silk-emerald hover:bg-emerald-800 text-canvas text-xs font-semibold tracking-wide transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+              className="w-full py-1.5 px-2 rounded-lg bg-silk-emerald hover:bg-emerald-800 text-canvas text-xs font-semibold tracking-wide transition-colors flex items-center justify-center gap-1.5 shadow-sm"
               title="Order directly on WhatsApp with 0% extra gateway fees"
             >
               <MessageCircle className="w-3.5 h-3.5 fill-canvas" />

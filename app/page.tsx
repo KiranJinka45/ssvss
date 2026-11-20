@@ -9,14 +9,11 @@ import { CATALOG } from "@/data/catalog";
 import { Sparkles, ArrowRight, ShieldCheck, HeartHandshake, Star } from "lucide-react";
 
 export default function HomePage() {
-  // Select top 6 highlight sarees for home display
+  // Select top 3 highlight sarees for home display (fits in 1 page like CategoryRail)
   const featuredSarees = [
     CATALOG[4], // Pure Silk Magenta Gandaberunda
     CATALOG[0], // Semi-Silk Kumkum Maroon
     CATALOG[8], // Handloom Bridal Vermillion Muhurtham
-    CATALOG[5], // Pure Silk Peacock Teal
-    CATALOG[1], // Semi-Silk Rama Green
-    CATALOG[10], // Handloom Korvai Scarlet Rose
   ];
 
   const testimonials = [
@@ -55,31 +52,31 @@ export default function HomePage() {
       <CategoryRail />
 
       {/* Featured Master Loom Weaves */}
-      <section className="py-12 sm:py-16 bg-canvas-surface border-b border-loom-border/60">
+      <section className="py-8 sm:py-10 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 sm:mb-6">
             <div>
-              <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
+              <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
                 Loom-Fresh Arrivals
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-maroon">
-                Master Pit-Loom Creations
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-maroon">
+                Master Weaver Creations
               </h2>
-              <p className="text-sm text-loom-bronze mt-2 max-w-xl">
+              <p className="text-xs sm:text-sm text-loom-bronze mt-1 max-w-xl">
                 Individually woven over 4 to 22 days by master artisan families in Dharmavaram. Once sold, identical re-weaves require up to 3 weeks on the loom.
               </p>
             </div>
 
             <Link
               href="/collections/all"
-              className="mt-4 md:mt-0 px-5 py-2.5 rounded-lg bg-maroon text-canvas hover:bg-maroon-700 text-xs font-semibold tracking-wide transition-all shadow-sm flex items-center gap-2 group w-fit"
+              className="mt-3 md:mt-0 px-4 py-2 rounded-lg bg-maroon text-canvas hover:bg-maroon-700 text-xs font-semibold tracking-wide transition-all shadow-sm flex items-center gap-1.5 group w-fit shrink-0"
             >
               <span>View Full 12-Saree Catalog</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-gold-400" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {featuredSarees.map((saree) => (
               <ProductCard key={saree.id} saree={saree} />
             ))}

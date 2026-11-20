@@ -72,9 +72,12 @@ export async function POST(req: NextRequest) {
           }),
         });
 
+        const resendData = await resendRes.json();
         if (resendRes.ok) {
           gatewayStatus = "resend";
-          console.log(`[Resend Email] Successfully delivered OTP to ${cleanEmail}`);
+          console.log(`[Resend Email] Successfully delivered OTP to ${cleanEmail}. Email ID: ${resendData?.id}`);
+        } else {
+          console.error(`[Resend Email] API Error:`, resendData);
         }
       } catch (emailErr) {
         console.error("[Resend Email] Failed to send email:", emailErr);

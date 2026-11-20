@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Server-side in-memory active OTP storage
-const activeOtps = new Map<string, { code: string; expiry: number }>();
+import { saveServerOtp } from "@/lib/otpStore";
 
 function normalizeEmail(raw: string): string {
   return raw.trim().toLowerCase();
@@ -27,15 +25,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate 6-digit OTP code:
-    // Primary account (kiranjinkakumar@gmail.com) gets 481290, others get secure random 6 digits
-    let code = "481290";
-    if (!cleanEmail.includes("kiranjinka") && !cleanEmail.includes("kiran")) {
-      code = Math.floor(100000 + Math.random() * 900000).toString();
-    }
-
-    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes validity
-    activeOtps.set(cleanEmail, { code, expiry });
+    // Generate a fresh, unique 6-digit random OTP every time
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    saveServerOtp(cleanEmail, code, 5);
 
     let gatewayStatus = "local_dispatch";
 

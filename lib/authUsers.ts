@@ -186,19 +186,14 @@ export function registerNewUser(data: {
  * OTP Management: Generate a 6-digit OTP code and store with 5-minute expiry.
  */
 export function generateOtp(identifier: string): { code: string; expiry: number } {
-  const cleanPhone = normalizePhone(identifier);
-  const cleanEmail = normalizeEmail(identifier);
-  // For user's account (9493348129 or kiranjinkakumar), reliable code 481290, otherwise random 6-digit
-  let code = "481290";
-  if (!cleanPhone.includes("9493348129") && !cleanEmail.includes("kiranjinka")) {
-    code = Math.floor(100000 + Math.random() * 900000).toString();
-  }
+  // Generate a fresh, different 6-digit random code every time
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
 
   if (typeof window !== "undefined") {
     sessionStorage.setItem(
       OTP_STORAGE_KEY,
-      JSON.stringify({ identifier: identifier.trim(), code, expiry })
+      JSON.stringify({ identifier: identifier.trim().toLowerCase(), code, expiry })
     );
   }
 

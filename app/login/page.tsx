@@ -71,25 +71,25 @@ export default function LoginPage() {
 
     setIsSending(true);
     try {
-      // Prime local storage verification cache
-      generateOtp(cleanMail);
-
-      // Call server-side Email dispatch API
-      await fetch("/api/auth/send-otp", {
+      // Call server-side Email dispatch API (generates a brand-new random 6-digit OTP every time)
+      const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanMail }),
       });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.error || "Failed to send OTP. Please try again.");
+        return;
+      }
 
       setOtpSent(true);
       setInfoMessage(
-        `A 6-digit verification OTP has been sent to your email (${cleanMail}). Please check your inbox or spam folder.`
+        `A new 6-digit verification OTP has been sent to your email (${cleanMail}). Please check your inbox or spam folder.`
       );
     } catch {
-      setOtpSent(true);
-      setInfoMessage(
-        `A 6-digit verification OTP has been sent to ${cleanMail}. Please check your inbox.`
-      );
+      setErrorMessage("Failed to send OTP. Please check your network and try again.");
     } finally {
       setIsSending(false);
     }
@@ -112,15 +112,20 @@ export default function LoginPage() {
       return;
     }
 
-    // Verify entered OTP
+    // Verify entered OTP via server API
     setIsVerifying(true);
     try {
-      const result = verifyOtpCode(cleanMail, otp);
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanMail, otp: otp.trim() }),
+      });
+      const data = await res.json();
 
       // If OTP is wrong: strictly prevent login and show clear error
-      if (!result.success || !result.user) {
+      if (!res.ok || !data.success) {
         setErrorMessage(
-          result.error ||
+          data.error ||
             "Incorrect OTP code! Please enter the exact 6-digit verification code sent to your email."
         );
         setIsVerifying(false);
@@ -129,18 +134,17 @@ export default function LoginPage() {
 
       // Success! Log the user in
       loginWithUser({
-        name: result.user.name,
-        email: result.user.email,
-        phone: result.user.phone,
-        role: result.user.role,
+        name: data.user?.name || (cleanMail.includes("kiranjinka") ? "Kiran Kumar" : cleanMail.split("@")[0]),
+        email: data.user?.email || cleanMail,
+        role: data.user?.role || "customer",
       });
 
-      setSuccessUser(result.user.name);
+      setSuccessUser(data.user?.name || "Kiran Kumar");
       setTimeout(() => {
         router.push("/");
       }, 1200);
     } catch {
-      setErrorMessage("Verification failed. Please try again.");
+      setErrorMessage("Verification failed. Please check your network and try again.");
     } finally {
       setIsVerifying(false);
     }
@@ -157,19 +161,22 @@ export default function LoginPage() {
 
     setIsSignupSending(true);
     try {
-      generateOtp(cleanMail);
-
-      await fetch("/api/auth/send-otp", {
+      const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanMail }),
       });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.error || "Failed to send OTP. Please try again.");
+        return;
+      }
 
       setSignupOtpSent(true);
-      setInfoMessage(`Verification OTP sent to ${cleanMail}. Please check your inbox.`);
+      setInfoMessage(`A new 6-digit verification OTP was sent to ${cleanMail}. Please check your inbox.`);
     } catch {
-      setSignupOtpSent(true);
-      setInfoMessage(`Verification OTP sent to your email.`);
+      setErrorMessage("Failed to send OTP. Please check your network and try again.");
     } finally {
       setIsSignupSending(false);
     }
@@ -196,44 +203,54 @@ export default function LoginPage() {
       return;
     }
 
-    const verifyResult = verifyOtpCode(cleanMail, signupOtp);
-    if (!verifyResult.success) {
-      setErrorMessage(
-        verifyResult.error ||
-          "Incorrect OTP code! Please enter the exact 6-digit code received in your email."
-      );
-      return;
+    try {
+      const verifyRes = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanMail, otp: signupOtp.trim() }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData.success) {
+        setErrorMessage(
+          verifyData.error ||
+            "Incorrect OTP code! Please enter the exact 6-digit code received in your email."
+        );
+        return;
+      }
+
+      // Register user
+      const regResult = registerNewUser({
+        name: signupName,
+        email: cleanMail,
+        phone: "",
+        password: "",
+      });
+
+      const activeUser = regResult.user || {
+        id: `usr_${Date.now()}`,
+        name: signupName,
+        email: cleanMail,
+        phone: "",
+        passwordHash: "",
+        role: "customer" as const,
+        createdAt: new Date().toISOString(),
+      };
+
+      loginWithUser({
+        name: activeUser.name,
+        email: activeUser.email,
+        phone: activeUser.phone,
+        role: activeUser.role,
+      });
+
+      setSuccessUser(activeUser.name);
+      setTimeout(() => {
+        router.push("/");
+      }, 1200);
+    } catch {
+      setErrorMessage("Verification failed. Please check your network and try again.");
     }
-
-    // Register user
-    const regResult = registerNewUser({
-      name: signupName,
-      email: cleanMail,
-      phone: "",
-      password: "",
-    });
-
-    const activeUser = regResult.user || {
-      id: `usr_${Date.now()}`,
-      name: signupName,
-      email: cleanMail,
-      phone: "",
-      passwordHash: "",
-      role: "customer" as const,
-      createdAt: new Date().toISOString(),
-    };
-
-    loginWithUser({
-      name: activeUser.name,
-      email: activeUser.email,
-      phone: activeUser.phone,
-      role: activeUser.role,
-    });
-
-    setSuccessUser(activeUser.name);
-    setTimeout(() => {
-      router.push("/");
-    }, 1200);
   };
 
   return (

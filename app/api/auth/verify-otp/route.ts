@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerOtp, clearServerOtp } from "@/lib/otpStore";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,19 +14,34 @@ export async function POST(req: NextRequest) {
     }
 
     const enteredOtp = otp.toString().trim();
+    const stored = getServerOtp(targetEmail);
 
-    // Verify code:
-    // For kiranjinkakumar@gmail.com, valid code is 481290
-    const isOwner = targetEmail === "kiranjinkakumar@gmail.com" || targetEmail.includes("kiranjinka");
-    const isValid = enteredOtp === "481290";
-
-    if (!isValid) {
+    if (!stored) {
       return NextResponse.json(
-        { error: "Incorrect OTP code! Please enter the exact 6-digit code received in your email." },
+        { error: "No active OTP found for this email. Please request a new OTP code." },
         { status: 400 }
       );
     }
 
+    if (Date.now() > stored.expiry) {
+      clearServerOtp(targetEmail);
+      return NextResponse.json(
+        { error: "This OTP has expired. Please click Resend OTP to receive a new code." },
+        { status: 400 }
+      );
+    }
+
+    if (stored.code !== enteredOtp) {
+      return NextResponse.json(
+        { error: "Incorrect OTP code! Please enter the latest 6-digit code sent to your email." },
+        { status: 400 }
+      );
+    }
+
+    // OTP matched! Consume the code so it cannot be reused
+    clearServerOtp(targetEmail);
+
+    const isOwner = targetEmail === "kiranjinkakumar@gmail.com" || targetEmail.includes("kiranjinka");
     return NextResponse.json({
       success: true,
       user: {
@@ -37,7 +53,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("verify-otp API error:", err);
     return NextResponse.json(
-      { error: "Failed to verify OTP." },
+      { error: "Failed to verify OTP. Please try again." },
       { status: 500 }
     );
   }

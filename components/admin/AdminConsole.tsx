@@ -23,15 +23,26 @@ import {
   Check,
   Package,
   Home,
+  Sliders,
+  Eye,
+  Layers,
 } from "lucide-react";
 import { CATALOG, SareeSKU, SareeCategory, StockStatus } from "@/data/catalog";
 import { useAuthStore } from "@/store/useAuthStore";
 import { MERCHANT_CONFIG } from "@/lib/config";
+import {
+  DEFAULT_CATEGORY_TIERS,
+  DEFAULT_MASTER_CREATIONS_SKUS,
+  DEFAULT_COLLECTION_METAS,
+  CategoryTier,
+} from "@/lib/collectionsStore";
 
 const ADMIN_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN || "2027";
 
 export function AdminConsole() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "products" | "categories" | "add-product" | "edit-product">("dashboard");
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "products" | "collections" | "categories" | "add-product" | "edit-product"
+  >("dashboard");
   const [pin, setPin] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinError, setPinError] = useState(false);
@@ -56,6 +67,17 @@ export function AdminConsole() {
   const [formStatus, setFormStatus] = useState<StockStatus>("IN_STOCK");
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [videoUrlInput, setVideoUrlInput] = useState("");
+
+  // Storefront Placement States (User's Core Requirement)
+  const [formShowInMasterCreations, setFormShowInMasterCreations] = useState(true);
+  const [formSetAsTierCover, setFormSetAsTierCover] = useState(false);
+
+  // Collections & Placements Customization State
+  const [categoryTiers, setCategoryTiers] = useState<CategoryTier[]>(DEFAULT_CATEGORY_TIERS);
+  const [categoryRailMeta, setCategoryRailMeta] = useState(DEFAULT_COLLECTION_METAS.categoryRail);
+  const [masterCreationsMeta, setMasterCreationsMeta] = useState(DEFAULT_COLLECTION_METAS.masterCreations);
+  const [masterCreationsSkus, setMasterCreationsSkus] = useState<string[]>(DEFAULT_MASTER_CREATIONS_SKUS);
+  const [collectionsSaveSuccess, setCollectionsSaveSuccess] = useState(false);
 
   const { isLoggedIn, user, loginAsAdmin, logout: storeLogout } = useAuthStore();
 
@@ -106,6 +128,23 @@ export function AdminConsole() {
     }
 
     setProducts(loadedProducts);
+
+    // Load collections & placements customization
+    try {
+      const savedTiers = localStorage.getItem("loom_category_tiers");
+      if (savedTiers) setCategoryTiers(JSON.parse(savedTiers));
+
+      const savedCatMeta = localStorage.getItem("loom_category_rail_meta");
+      if (savedCatMeta) setCategoryRailMeta(JSON.parse(savedCatMeta));
+
+      const savedMasterMeta = localStorage.getItem("loom_master_creations_meta");
+      if (savedMasterMeta) setMasterCreationsMeta(JSON.parse(savedMasterMeta));
+
+      const savedMasterSkus = localStorage.getItem("loom_master_creations_skus");
+      if (savedMasterSkus) setMasterCreationsSkus(JSON.parse(savedMasterSkus));
+    } catch (err) {
+      console.warn("Could not load collections config:", err);
+    }
   }, [isLoggedIn, loginAsAdmin]);
 
   // Handle PIN Login
@@ -154,6 +193,8 @@ export function AdminConsole() {
     setFormIsBestSeller(false);
     setFormIsFeatured(false);
     setFormStatus("IN_STOCK");
+    setFormShowInMasterCreations(true);
+    setFormSetAsTierCover(false);
     setImageUrlInput("");
     setVideoUrlInput("");
     setActiveTab("add-product");
@@ -181,6 +222,8 @@ export function AdminConsole() {
     setFormIsBestSeller(false);
     setFormIsFeatured(false);
     setFormStatus(product.stockStatus);
+    setFormShowInMasterCreations(Boolean(product.showInMasterCreations ?? true));
+    setFormSetAsTierCover(Boolean(product.isTierCover));
     setImageUrlInput("");
     setVideoUrlInput("");
     setActiveTab("edit-product");
@@ -295,6 +338,8 @@ export function AdminConsole() {
         "Pure Silk Mark Certified",
         "Direct Loom Savings with 0% Markup",
       ],
+      showInMasterCreations: formShowInMasterCreations,
+      isTierCover: formSetAsTierCover,
     };
 
     let updatedList: SareeSKU[];
@@ -312,6 +357,44 @@ export function AdminConsole() {
     }
 
     setProducts(updatedList);
+
+    // Save placement into Master Weaver Creations showcase if selected
+    try {
+      const currentMasterSkus = JSON.parse(
+        localStorage.getItem("loom_master_creations_skus") || JSON.stringify(DEFAULT_MASTER_CREATIONS_SKUS)
+      ) as string[];
+      let nextMasterSkus = currentMasterSkus.filter((s) => s.toUpperCase() !== updatedSku.sku.toUpperCase());
+      if (formShowInMasterCreations) {
+        nextMasterSkus = [updatedSku.sku, ...nextMasterSkus].slice(0, 6);
+      }
+      localStorage.setItem("loom_master_creations_skus", JSON.stringify(nextMasterSkus));
+      setMasterCreationsSkus(nextMasterSkus);
+    } catch (e) {
+      console.warn("Could not update master creations placement:", e);
+    }
+
+    // Save placement as Tier Cover image/price if selected
+    if (formSetAsTierCover) {
+      try {
+        const currentTiers = JSON.parse(
+          localStorage.getItem("loom_category_tiers") || JSON.stringify(DEFAULT_CATEGORY_TIERS)
+        ) as CategoryTier[];
+        const updatedTiers = currentTiers.map((tier) => {
+          if (tier.slug === formCategory) {
+            return {
+              ...tier,
+              image: formImages[0] || tier.image,
+              loomPrice: `Direct Loom: ₹${priceNum.toLocaleString("en-IN")}`,
+            };
+          }
+          return tier;
+        });
+        localStorage.setItem("loom_category_tiers", JSON.stringify(updatedTiers));
+        setCategoryTiers(updatedTiers);
+      } catch (e) {
+        console.warn("Could not update tier cover placement:", e);
+      }
+    }
 
     // Save stock overrides
     const overrides = JSON.parse(localStorage.getItem("loom_inventory_overrides") || "{}") as Record<string, StockStatus>;
@@ -358,6 +441,44 @@ export function AdminConsole() {
       overrides[sku] = target.stockStatus;
       localStorage.setItem("loom_inventory_overrides", JSON.stringify(overrides));
     }
+  };
+
+  // Save Collections & Placements Configuration
+  const handleSaveCollections = () => {
+    try {
+      localStorage.setItem("loom_category_tiers", JSON.stringify(categoryTiers));
+      localStorage.setItem("loom_category_rail_meta", JSON.stringify(categoryRailMeta));
+      localStorage.setItem("loom_master_creations_meta", JSON.stringify(masterCreationsMeta));
+      localStorage.setItem("loom_master_creations_skus", JSON.stringify(masterCreationsSkus));
+      setCollectionsSaveSuccess(true);
+      setTimeout(() => setCollectionsSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error("Failed to save collections:", err);
+      alert("Error saving collections configuration");
+    }
+  };
+
+  const handleToggleMasterSku = (sku: string) => {
+    const isSelected = masterCreationsSkus.includes(sku);
+    let next: string[];
+    if (isSelected) {
+      next = masterCreationsSkus.filter((s) => s !== sku);
+    } else {
+      if (masterCreationsSkus.length >= 6) {
+        alert("Maximum 6 sarees can be spotlighted in Master Weaver Creations. Please uncheck one first.");
+        return;
+      }
+      next = [...masterCreationsSkus, sku];
+    }
+    setMasterCreationsSkus(next);
+  };
+
+  const handleUpdateTier = (index: number, field: keyof CategoryTier, value: string) => {
+    setCategoryTiers((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
   };
 
   // Stat calculations
@@ -468,6 +589,19 @@ export function AdminConsole() {
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Products</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("collections")}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                activeTab === "collections"
+                  ? "bg-[#18181F] border border-[#E5B842]/60 text-[#E5B842] shadow-sm"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Package className="w-4 h-4" />
+              <span>Collections & Placements</span>
             </button>
 
             <button
@@ -909,6 +1043,63 @@ export function AdminConsole() {
                       ))}
                     </select>
                   </div>
+
+                  {/* STOREFRONT COLLECTION PLACEMENT (Core Requirement) */}
+                  <div className="p-4 rounded-xl bg-[#18181F] border border-[#E5B842]/30 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-[#E5B842]" />
+                      <span className="text-xs uppercase font-bold tracking-wider text-[#E5B842]">
+                        Storefront Placement Controls
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      Decide where this saree should appear across the customer homepage and collection showcases:
+                    </p>
+
+                    <div className="space-y-2.5 pt-1">
+                      {/* Placement 1: Master Weaver Creations */}
+                      <label className="flex items-start gap-3 p-2.5 rounded-lg bg-black/40 border border-white/10 hover:border-[#E5B842]/40 cursor-pointer transition-all">
+                        <input
+                          type="checkbox"
+                          checked={formShowInMasterCreations}
+                          onChange={(e) => setFormShowInMasterCreations(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded bg-[#18181F] border-white/20 text-[#E5B842] focus:ring-0"
+                        />
+                        <div className="text-xs">
+                          <span className="font-semibold text-white flex items-center gap-1.5">
+                            Feature in &ldquo;Loom-Fresh Arrivals: Master Weaver Creations&rdquo;
+                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold bg-[#E5B842]/20 text-[#E5B842]">
+                              Home Showcase
+                            </span>
+                          </span>
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            Places this saree directly in the spotlight 6-saree section on the customer homepage.
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Placement 2: Curated Weaving Tiers */}
+                      <label className="flex items-start gap-3 p-2.5 rounded-lg bg-black/40 border border-white/10 hover:border-[#E5B842]/40 cursor-pointer transition-all">
+                        <input
+                          type="checkbox"
+                          checked={formSetAsTierCover}
+                          onChange={(e) => setFormSetAsTierCover(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded bg-[#18181F] border-white/20 text-[#E5B842] focus:ring-0"
+                        />
+                        <div className="text-xs">
+                          <span className="font-semibold text-white flex items-center gap-1.5">
+                            Set as Cover Photo for &ldquo;Curated Weaving Tiers&rdquo;
+                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-bold bg-amber-500/20 text-amber-300">
+                              {categoriesList.find((c) => c.slug === formCategory)?.name || formCategory}
+                            </span>
+                          </span>
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            Updates the primary cover photo & starting price for this category card in the top collection rail.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {/* RIGHT COLUMN: Description, Images & Video Upload */}
@@ -1138,6 +1329,397 @@ export function AdminConsole() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* 5. COLLECTIONS & PLACEMENTS VIEW                         */}
+        {/* ======================================================== */}
+        {activeTab === "collections" && (
+          <div className="space-y-8 animate-fadeIn pb-16">
+            {/* Header & Global Save */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-[#121216] border border-white/10">
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-[#E5B842] block">
+                  STOREFRONT DESIGN & CURATION
+                </span>
+                <h1 className="font-serif text-3xl font-bold text-[#F5EFE6] mt-1">
+                  Collections & Placements
+                </h1>
+                <p className="text-xs text-gray-400 mt-1">
+                  Customize both homepage showcase sections, headings, discount badges, and featured sarees in real time.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-[#F5EFE6] hover:text-[#E5B842] hover:border-[#E5B842]/50 font-semibold text-xs tracking-wider transition-all"
+                  title="Preview Customer Storefront"
+                >
+                  <Home className="w-4 h-4 text-[#E5B842]" />
+                  <span>Preview Home</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleSaveCollections}
+                  className="py-2.5 px-6 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl transition-all active:scale-98"
+                >
+                  {collectionsSaveSuccess ? (
+                    <>
+                      <Check className="w-4 h-4 text-black" />
+                      <span>Saved Live!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Save All Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Success toast banner */}
+            {collectionsSaveSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>
+                  <strong>Success!</strong> All changes to both collections have been saved and applied to your live customer storefront.
+                </span>
+              </div>
+            )}
+
+            {/* COLLECTION 1: CURATED WEAVING TIERS */}
+            <div className="p-6 rounded-2xl bg-[#121216] border border-white/10 space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#E5B842] block">
+                    COLLECTION SECTION 1 (TOP RAIL)
+                  </span>
+                  <h2 className="font-serif text-2xl font-bold text-[#F5EFE6] mt-0.5">
+                    Curated Weaving Tiers
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Controls the 4-column tier collection cards on the homepage (Semi-Silk, Pure Silk, Handloom Bridal, B2B Wholesale).
+                  </p>
+                </div>
+              </div>
+
+              {/* Section Header Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-[#18181F] border border-white/10">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#E5B842] mb-1">
+                    Section Eyebrow Tag
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryRailMeta.eyebrow}
+                    onChange={(e) =>
+                      setCategoryRailMeta((prev) => ({ ...prev, eyebrow: e.target.value }))
+                    }
+                    className="w-full py-2 px-3 rounded-lg bg-black/40 border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#E5B842] mb-1">
+                    Section Main Heading
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryRailMeta.title}
+                    onChange={(e) =>
+                      setCategoryRailMeta((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    className="w-full py-2 px-3 rounded-lg bg-black/40 border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#E5B842] mb-1">
+                    Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryRailMeta.subtitle}
+                    onChange={(e) =>
+                      setCategoryRailMeta((prev) => ({ ...prev, subtitle: e.target.value }))
+                    }
+                    className="w-full py-2 px-3 rounded-lg bg-black/40 border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                  />
+                </div>
+              </div>
+
+              {/* 4 Tier Cards Editor */}
+              <div>
+                <h3 className="text-xs uppercase font-bold tracking-wider text-gray-300 mb-3">
+                  Tier Cards Configuration (4 Tiers)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {categoryTiers.map((tier, index) => (
+                    <div
+                      key={tier.id}
+                      className="p-4 rounded-xl bg-[#18181F] border border-white/10 space-y-3 flex flex-col justify-between"
+                    >
+                      {/* Image Thumbnail & Badge Preview */}
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/60 border border-white/10 group">
+                        <img
+                          src={tier.image}
+                          alt={tier.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#5B1020]/90 text-white shadow-md border border-[#E5B842]/40">
+                          {tier.discountBadge}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 pt-1 text-xs">
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-0.5">
+                            Tier Title
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.title}
+                            onChange={(e) => handleUpdateTier(index, "title", e.target.value)}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-amber-400 mb-0.5">
+                            Badge (e.g. 33% OFF / SILK MARK)
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.discountBadge}
+                            onChange={(e) => handleUpdateTier(index, "discountBadge", e.target.value)}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-xs text-[#E5B842] focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-0.5">
+                            Showroom Anchor Price
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.anchorPrice}
+                            onChange={(e) => handleUpdateTier(index, "anchorPrice", e.target.value)}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-xs text-gray-300 focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-emerald-400 mb-0.5">
+                            Direct Loom Price
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.loomPrice}
+                            onChange={(e) => handleUpdateTier(index, "loomPrice", e.target.value)}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-xs font-semibold text-emerald-300 focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-0.5">
+                            Card Subtitle / Spec
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.description}
+                            onChange={(e) => handleUpdateTier(index, "description", e.target.value)}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-[11px] text-gray-400 focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-0.5">
+                            Cover Image URL / Path
+                          </label>
+                          <input
+                            type="text"
+                            value={tier.image}
+                            onChange={(e) => handleUpdateTier(index, "image", e.target.value)}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-[11px] text-gray-400 font-mono truncate focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* COLLECTION 2: MASTER WEAVER CREATIONS */}
+            <div className="p-6 rounded-2xl bg-[#121216] border border-white/10 space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#E5B842] block">
+                    COLLECTION SECTION 2 (SPOTLIGHT SHOWCASE)
+                  </span>
+                  <h2 className="font-serif text-2xl font-bold text-[#F5EFE6] mt-0.5">
+                    Loom-Fresh Arrivals: Master Weaver Creations
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Select exactly which sarees appear in the 6-slot spotlight section on the homepage.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-[#E5B842]">
+                    {masterCreationsSkus.length} of 6 Sarees Active
+                  </span>
+                </div>
+              </div>
+
+              {/* Section Header Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-[#18181F] border border-white/10">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#E5B842] mb-1">
+                    Section Eyebrow Tag
+                  </label>
+                  <input
+                    type="text"
+                    value={masterCreationsMeta.eyebrow}
+                    onChange={(e) =>
+                      setMasterCreationsMeta((prev) => ({ ...prev, eyebrow: e.target.value }))
+                    }
+                    className="w-full py-2 px-3 rounded-lg bg-black/40 border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#E5B842] mb-1">
+                    Section Main Heading
+                  </label>
+                  <input
+                    type="text"
+                    value={masterCreationsMeta.title}
+                    onChange={(e) =>
+                      setMasterCreationsMeta((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    className="w-full py-2 px-3 rounded-lg bg-black/40 border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#E5B842] mb-1">
+                    Section Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={masterCreationsMeta.subtitle}
+                    onChange={(e) =>
+                      setMasterCreationsMeta((prev) => ({ ...prev, subtitle: e.target.value }))
+                    }
+                    className="w-full py-2 px-3 rounded-lg bg-black/40 border border-white/15 text-xs text-[#F5EFE6] focus:outline-none focus:border-[#E5B842]"
+                  />
+                </div>
+              </div>
+
+              {/* Saree Showcase Selector (Choose which 6 sarees are featured) */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs uppercase font-bold tracking-wider text-gray-300">
+                    Assign Sarees to the 6 Showcase Slots
+                  </h3>
+                  <span className="text-[11px] text-gray-400">
+                    Click any saree card to toggle its placement on the homepage showcase.
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {products.map((product) => {
+                    const isSelected = masterCreationsSkus.includes(product.sku);
+                    const slotIndex = masterCreationsSkus.indexOf(product.sku);
+                    const discountPct =
+                      product.showroomPrice > product.price
+                        ? Math.round(((product.showroomPrice - product.price) / product.showroomPrice) * 100)
+                        : null;
+
+                    return (
+                      <div
+                        key={product.sku}
+                        onClick={() => handleToggleMasterSku(product.sku)}
+                        className={`relative rounded-xl border p-2 cursor-pointer transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? "bg-[#18181F] border-[#E5B842] shadow-lg shadow-[#E5B842]/10 ring-1 ring-[#E5B842]"
+                            : "bg-[#121216] border-white/10 hover:border-white/30 opacity-70 hover:opacity-100"
+                        }`}
+                      >
+                        {/* Slot Badge */}
+                        {isSelected && (
+                          <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-[#E5B842] text-black font-bold text-[10px] flex items-center justify-center shadow-md">
+                            #{slotIndex + 1}
+                          </div>
+                        )}
+
+                        <div className="relative aspect-square rounded-lg overflow-hidden bg-black/60 mb-2">
+                          <img
+                            src={product.images[0]}
+                            alt={product.title}
+                            className="w-full h-full object-cover"
+                          />
+                          {discountPct && (
+                            <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-[#5B1020] text-white">
+                              {discountPct}% OFF
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="text-[10px] font-mono text-[#E5B842] truncate">
+                            {product.sku}
+                          </div>
+                          <div className="text-[11px] font-semibold text-white line-clamp-1">
+                            {product.title}
+                          </div>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-bold text-emerald-400">
+                              ₹{product.price.toLocaleString("en-IN")}
+                            </span>
+                            <span className="text-gray-400 text-[9px] capitalize">
+                              {product.category}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+                          <span
+                            className={`font-semibold ${
+                              isSelected ? "text-[#E5B842]" : "text-gray-400"
+                            }`}
+                          >
+                            {isSelected ? "Featured ✓" : "Not Featured"}
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            className="w-3.5 h-3.5 rounded bg-black/40 border-white/20 text-[#E5B842] focus:ring-0"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bottom Save Action */}
+              <div className="pt-4 border-t border-white/10 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveCollections}
+                  className="py-3 px-8 rounded-xl bg-[#E5B842] hover:bg-[#D4A732] text-black font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl transition-all active:scale-98"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Collections Configuration</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

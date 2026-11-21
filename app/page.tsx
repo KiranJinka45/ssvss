@@ -2,23 +2,12 @@ import React from "react";
 import Link from "next/link";
 import { HeroEditorial } from "@/components/home/HeroEditorial";
 import { CategoryRail } from "@/components/home/CategoryRail";
+import { MasterCreationsRail } from "@/components/home/MasterCreationsRail";
 import { LoomToWardrobe } from "@/components/home/LoomToWardrobe";
 import { VideoCallBanner } from "@/components/home/VideoCallBanner";
-import { ProductCard } from "@/components/product/ProductCard";
-import { CATALOG } from "@/data/catalog";
-import { Sparkles, ArrowRight, ShieldCheck, HeartHandshake, Star } from "lucide-react";
+import { ShieldCheck, Star } from "lucide-react";
 
 export default function HomePage() {
-  // Select top 6 highlight sarees for full-width 6-column showcase (like Image 7)
-  const featuredSarees = [
-    CATALOG[4], // Pure Silk Magenta Gandaberunda
-    CATALOG[0], // Semi-Silk Kumkum Maroon
-    CATALOG[8], // Handloom Bridal Vermillion Muhurtham
-    CATALOG[5], // Pure Silk Peacock Teal
-    CATALOG[1], // Semi-Silk Rama Green
-    CATALOG[10], // Handloom Korvai Scarlet Rose
-  ];
-
   const testimonials = [
     {
       name: "Radhika Kulkarni",
@@ -54,38 +43,8 @@ export default function HomePage() {
       {/* Category Rail (Tiers) */}
       <CategoryRail />
 
-      {/* Featured Master Loom Weaves - Full Width Showcase */}
-      <section className="py-8 sm:py-12 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
-        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
-            <div>
-              <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
-                Loom-Fresh Arrivals
-              </span>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-maroon">
-                Master Weaver Creations
-              </h2>
-              <p className="text-xs sm:text-sm text-loom-bronze mt-1 max-w-2xl">
-                Individually woven over 4 to 22 days by master artisan families in Dharmavaram. Direct from the pit-looms.
-              </p>
-            </div>
-
-            <Link
-              href="/collections/all"
-              className="mt-3 md:mt-0 px-4 py-2 rounded-lg bg-maroon text-canvas hover:bg-maroon-700 text-xs font-semibold tracking-wide transition-all shadow-sm flex items-center gap-1.5 group w-fit shrink-0"
-            >
-              <span>View Full 12-Saree Catalog</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-gold-400" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 xl:gap-5">
-            {featuredSarees.map((saree) => (
-              <ProductCard key={saree.id} saree={saree} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Featured Master Loom Weaves - Full Width Dynamic Showcase */}
+      <MasterCreationsRail />
 
       {/* Middleman vs Direct Loom Visualizer */}
       <LoomToWardrobe />

@@ -1,47 +1,26 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { DEFAULT_CATEGORY_TIERS, DEFAULT_COLLECTION_METAS, CategoryTier } from "@/lib/collectionsStore";
 
 export function CategoryRail() {
-  const categories = [
-    {
-      title: "Semi-Silk Festive",
-      slug: "semi-silk",
-      anchorPrice: "Showroom: ₹4,800",
-      loomPrice: "Direct Loom: ₹3,200",
-      discountBadge: "33% OFF",
-      description: "High-velocity 580g wrinkle-resistant festive drapes with tested antique gold zari.",
-      image: "/images/sarees/semi-01.jpg",
-    },
-    {
-      title: "Pure Mulberry Silk",
-      slug: "pure-silk",
-      anchorPrice: "Showroom: ₹18,500",
-      loomPrice: "Direct Loom: ₹12,500",
-      discountBadge: "32% OFF",
-      description: "Central Silk Board Silk Mark certified 740g pure pit-loom weaves with Korvai temple borders.",
-      image: "/images/sarees/pure-01.jpg",
-    },
-    {
-      title: "Handloom Bridal Heirloom",
-      slug: "handloom-bridal",
-      anchorPrice: "Showroom: ₹25,500+",
-      loomPrice: "Direct Loom: ₹16,000+",
-      discountBadge: "37% OFF",
-      description: "Limited single-loom weaves (18-24 days on pit-loom) with heavy 3G pure gold zari.",
-      image: "/images/sarees/handloom-01.jpg",
-    },
-    {
-      title: "B2B Boutique Wholesale",
-      slug: "wholesale",
-      anchorPrice: "Tier Discounts up to 32%",
-      loomPrice: "MOQ: 10, 25 & 50 Sarees",
-      discountBadge: "UP TO 32% OFF",
-      description: "Passcode-gated portal for boutique owners with GSTIN capture & direct NEFT proforma.",
-      isWholesale: true,
-      image: "/images/sarees/pure-02.jpg",
-    },
-  ];
+  const [categories, setCategories] = useState<CategoryTier[]>(DEFAULT_CATEGORY_TIERS);
+  const [meta, setMeta] = useState(DEFAULT_COLLECTION_METAS.categoryRail);
+
+  useEffect(() => {
+    try {
+      const savedTiers = localStorage.getItem("loom_category_tiers");
+      if (savedTiers) {
+        setCategories(JSON.parse(savedTiers));
+      }
+      const savedMeta = localStorage.getItem("loom_category_rail_meta");
+      if (savedMeta) {
+        setMeta(JSON.parse(savedMeta));
+      }
+    } catch {}
+  }, []);
 
   return (
     <section className="py-10 sm:py-14 bg-canvas overflow-hidden">
@@ -49,13 +28,13 @@ export function CategoryRail() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
           <div>
             <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
-              Curated Weaving Tiers
+              {meta.eyebrow}
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-maroon">
-              Explore Our Dharmavaram Loom Collections
+              {meta.title}
             </h2>
             <p className="text-xs sm:text-sm text-loom-bronze mt-1.5 max-w-2xl">
-              From high-velocity festive semi-silk to once-in-a-generation bridal heirloom weaves, every saree is priced transparently direct from our pit-looms.
+              {meta.subtitle}
             </p>
           </div>
           <Link

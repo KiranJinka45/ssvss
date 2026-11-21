@@ -39,6 +39,8 @@ export interface SareeSKU {
   videos?: string[];
   reelVideoPlaceholderUrl?: string;
   highlights: string[];
+  showInMasterCreations?: boolean;
+  isTierCover?: boolean;
 }
 
 export const CATALOG: SareeSKU[] = [

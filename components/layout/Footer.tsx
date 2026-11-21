@@ -18,6 +18,7 @@ import {
   Youtube,
   MessageCircle,
   Check,
+  Lock,
 } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -418,10 +419,20 @@ export function Footer() {
         </div>
       )}
 
-      {/* Clean Full-Width Copyright Bar (Directly Matching Image 8) */}
+      {/* Clean Full-Width Copyright Bar with Admin Portal Link */}
       <div className="border-t border-white/10 py-5 bg-[#340B15]">
-        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 text-center text-xs text-white/60">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 flex flex-col sm:flex-row items-center justify-between text-xs text-white/60 gap-3">
           <p>© {new Date().getFullYear()} SSvSS Dharmavaram Handloom Silk Looms. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin"
+              className="text-white/45 hover:text-[#E5B842] transition-colors flex items-center gap-1.5 font-medium"
+              title="Founder & Artisan Admin Portal (PIN: 2027)"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#E5B842]" />
+              <span>Admin Dashboard</span>
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

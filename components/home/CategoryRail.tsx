@@ -23,9 +23,9 @@ export function CategoryRail() {
   }, []);
 
   return (
-    <section className="py-10 sm:py-14 bg-canvas overflow-hidden">
+    <section className="pt-6 sm:pt-8 pb-10 sm:pb-14 bg-canvas overflow-hidden">
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 sm:mb-7">
           <div>
             <span className="text-xs uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
               {meta.eyebrow}

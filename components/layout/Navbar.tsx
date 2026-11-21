@@ -132,7 +132,7 @@ export function Navbar() {
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 h-20 flex items-center justify-between">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 h-16 sm:h-18 flex items-center justify-between">
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

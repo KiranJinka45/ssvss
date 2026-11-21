@@ -59,10 +59,10 @@ export function HeroEditorial() {
         - Responsive aspect ratio preserving all text, motifs, and model drapes
       */}
       <div
-        className={`relative w-full transition-all duration-500 select-none overflow-hidden ${
+        className={`relative w-full transition-all duration-300 select-none overflow-hidden ${
           isFullUpload
-            ? "aspect-[1024/682] max-h-[800px]"
-            : "aspect-[1024/227] min-h-[160px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[340px] xl:min-h-[390px] 2xl:min-h-[430px]"
+            ? "aspect-[1024/682] max-h-[550px]"
+            : "w-full h-[180px] sm:h-[220px] md:h-[260px] lg:h-[295px] xl:h-[325px] max-h-[335px]"
         }`}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -86,7 +86,12 @@ export function HeroEditorial() {
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full h-full object-cover sm:object-fill object-center transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                  loading="eager"
+                  decoding="async"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.005]"
+                  style={{
+                    imageRendering: "-webkit-optimize-contrast",
+                  }}
                 />
               </Link>
             </div>
@@ -100,25 +105,25 @@ export function HeroEditorial() {
               type="button"
               onClick={handlePrev}
               aria-label="Previous Slide"
-              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-xs border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/35 hover:bg-black/65 text-white backdrop-blur-xs border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95"
             >
-              <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             <button
               type="button"
               onClick={handleNext}
               aria-label="Next Slide"
-              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-xs border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/35 hover:bg-black/65 text-white backdrop-blur-xs border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95"
             >
-              <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </>
         )}
 
         {/* Carousel Indicators at Bottom Center */}
         {slides.length > 1 && (
-          <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-md">
+          <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-md">
             {slides.map((_, index) => (
               <button
                 key={index}
@@ -127,8 +132,8 @@ export function HeroEditorial() {
                 aria-label={`Go to slide ${index + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   index === currentSlide
-                    ? "w-7 h-2 bg-[#E5B842] shadow-xs"
-                    : "w-2 h-2 bg-white/50 hover:bg-white"
+                    ? "w-6 h-1.5 bg-[#E5B842] shadow-xs"
+                    : "w-1.5 h-1.5 bg-white/50 hover:bg-white"
                 }`}
               />
             ))}

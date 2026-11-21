@@ -111,7 +111,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full bg-canvas/95 backdrop-blur-md border-b border-loom-border/60">
       {/* Top Scrolling Luxury Marquee Banner (Pushpalatha Reference Style) */}
-      <div className="w-full bg-[#24060E] border-b border-gold-500/20 text-gold-200 py-2 overflow-hidden select-none">
+      <div className="w-full bg-[#24060E] border-b border-gold-500/20 text-gold-200 py-1 overflow-hidden select-none">
         <div className="animate-marquee flex items-center space-x-6 text-[11px] sm:text-xs font-semibold tracking-[0.22em] uppercase">
           {/* First loop track */}
           {TICKER_ITEMS.map((item, idx) => (
@@ -132,7 +132,7 @@ export function Navbar() {
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 h-16 sm:h-18 flex items-center justify-between">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 h-14 sm:h-16 flex items-center justify-between">
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

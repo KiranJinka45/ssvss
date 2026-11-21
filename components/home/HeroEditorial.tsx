@@ -53,16 +53,16 @@ export function HeroEditorial() {
     <section className="relative w-full overflow-hidden bg-[#FAF7F2] border-b border-loom-border/50">
       {/* 
         Full-Width Luxury Hero Carousel:
-        - Occupies 100% of the screen width with ZERO margin on left or right
-        - Displays the high-resolution, professionally styled Dharmavaram artisan banners
-        - Seamless click navigation to corresponding collections
-        - Responsive aspect ratio preserving all text, motifs, and model drapes
+        - Maintains exact natural 4.51:1 aspect ratio so ZERO cropping or distortion occurs
+        - Fits completely within the screen without pushing content below the fold
+        - Hover-only subtle arrows hugging edges (no overlapping the model or temple)
+        - Bottom dot indicators placed subtly on the edge without blocking the button
       */}
       <div
-        className={`relative w-full transition-all duration-300 select-none overflow-hidden ${
+        className={`relative w-full transition-all duration-300 select-none overflow-hidden group ${
           isFullUpload
-            ? "aspect-[1024/682] max-h-[550px]"
-            : "w-full h-[180px] sm:h-[220px] md:h-[260px] lg:h-[295px] xl:h-[325px] max-h-[335px]"
+            ? "aspect-[1024/682] max-h-[480px]"
+            : "w-full aspect-[3840/851] max-h-[190px] sm:max-h-[225px] md:max-h-[245px] lg:max-h-[270px] xl:max-h-[290px]"
         }`}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -79,7 +79,7 @@ export function HeroEditorial() {
             >
               <Link
                 href={slide.href}
-                className="block w-full h-full relative group cursor-pointer"
+                className="block w-full h-full relative cursor-pointer"
                 title={slide.title}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -88,7 +88,7 @@ export function HeroEditorial() {
                   alt={slide.title}
                   loading="eager"
                   decoding="async"
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.005]"
+                  className="w-full h-full object-contain sm:object-cover object-center"
                   style={{
                     imageRendering: "-webkit-optimize-contrast",
                   }}
@@ -98,14 +98,14 @@ export function HeroEditorial() {
           );
         })}
 
-        {/* Navigation Arrows */}
+        {/* Navigation Arrows - Only visible on hover, hugging edges so they never block model or text */}
         {slides.length > 1 && (
           <>
             <button
               type="button"
               onClick={handlePrev}
               aria-label="Previous Slide"
-              className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/35 hover:bg-black/65 text-white backdrop-blur-xs border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
               <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -114,16 +114,16 @@ export function HeroEditorial() {
               type="button"
               onClick={handleNext}
               aria-label="Next Slide"
-              className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/35 hover:bg-black/65 text-white backdrop-blur-xs border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </>
         )}
 
-        {/* Carousel Indicators at Bottom Center */}
+        {/* Carousel Indicators at Bottom Center - Sleek and low so it never overlaps the button */}
         {slides.length > 1 && (
-          <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-md">
+          <div className="absolute bottom-1 sm:bottom-1.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20 shadow-xs">
             {slides.map((_, index) => (
               <button
                 key={index}
@@ -132,7 +132,7 @@ export function HeroEditorial() {
                 aria-label={`Go to slide ${index + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   index === currentSlide
-                    ? "w-6 h-1.5 bg-[#E5B842] shadow-xs"
+                    ? "w-5 h-1.5 bg-[#E5B842] shadow-xs"
                     : "w-1.5 h-1.5 bg-white/50 hover:bg-white"
                 }`}
               />

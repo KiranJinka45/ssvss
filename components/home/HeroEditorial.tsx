@@ -53,16 +53,15 @@ export function HeroEditorial() {
     <section className="relative w-full overflow-hidden bg-[#FAF7F2] border-b border-loom-border/50">
       {/* 
         Full-Width Luxury Hero Carousel:
-        - Maintains exact natural 4.51:1 aspect ratio so ZERO cropping or distortion occurs
-        - Fits completely within the screen without pushing content below the fold
-        - Hover-only subtle arrows hugging edges (no overlapping the model or temple)
-        - Bottom dot indicators placed subtly on the edge without blocking the button
+        - Perfectly calibrated height to fit 100% on the screen alongside Curated Weaving Tiers
+        - Opaque backgrounds prevent any ghosting or overlapping text between slides
+        - Subtle hover-only edge navigation arrows that never block the model or temple
       */}
       <div
-        className={`relative w-full transition-all duration-300 select-none overflow-hidden group ${
+        className={`relative w-full select-none overflow-hidden group ${
           isFullUpload
-            ? "aspect-[1024/682] max-h-[480px]"
-            : "w-full aspect-[3840/851] max-h-[190px] sm:max-h-[225px] md:max-h-[245px] lg:max-h-[270px] xl:max-h-[290px]"
+            ? "aspect-[1024/682] max-h-[460px]"
+            : "w-full h-[150px] sm:h-[170px] md:h-[190px] lg:h-[210px] xl:h-[230px]"
         }`}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -73,7 +72,7 @@ export function HeroEditorial() {
           return (
             <div
               key={slide.id || index}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              className={`absolute inset-0 bg-[#FAF7F2] transition-opacity duration-400 ease-in-out ${
                 isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
               }`}
             >
@@ -88,7 +87,7 @@ export function HeroEditorial() {
                   alt={slide.title}
                   loading="eager"
                   decoding="async"
-                  className="w-full h-full object-contain sm:object-cover object-center"
+                  className="w-full h-full object-cover object-center"
                   style={{
                     imageRendering: "-webkit-optimize-contrast",
                   }}

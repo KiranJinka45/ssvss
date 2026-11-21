@@ -34,6 +34,9 @@ import {
   DEFAULT_CATEGORY_TIERS,
   DEFAULT_MASTER_CREATIONS_SKUS,
   DEFAULT_COLLECTION_METAS,
+  DEFAULT_HERO_SLIDES,
+  HERO_SLIDE_PRESETS,
+  HeroSlide,
   CategoryTier,
 } from "@/lib/collectionsStore";
 
@@ -77,6 +80,8 @@ export function AdminConsole() {
   const [categoryRailMeta, setCategoryRailMeta] = useState(DEFAULT_COLLECTION_METAS.categoryRail);
   const [masterCreationsMeta, setMasterCreationsMeta] = useState(DEFAULT_COLLECTION_METAS.masterCreations);
   const [masterCreationsSkus, setMasterCreationsSkus] = useState<string[]>(DEFAULT_MASTER_CREATIONS_SKUS);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
+  const [activeHeroPreset, setActiveHeroPreset] = useState<string>("set1");
   const [collectionsSaveSuccess, setCollectionsSaveSuccess] = useState(false);
 
   const { isLoggedIn, user, loginAsAdmin, logout: storeLogout } = useAuthStore();
@@ -142,6 +147,12 @@ export function AdminConsole() {
 
       const savedMasterSkus = localStorage.getItem("loom_master_creations_skus");
       if (savedMasterSkus) setMasterCreationsSkus(JSON.parse(savedMasterSkus));
+
+      const savedHeroSlides = localStorage.getItem("loom_hero_slides");
+      if (savedHeroSlides) setHeroSlides(JSON.parse(savedHeroSlides));
+
+      const savedHeroPreset = localStorage.getItem("loom_hero_preset");
+      if (savedHeroPreset) setActiveHeroPreset(savedHeroPreset);
     } catch (err) {
       console.warn("Could not load collections config:", err);
     }
@@ -450,11 +461,20 @@ export function AdminConsole() {
       localStorage.setItem("loom_category_rail_meta", JSON.stringify(categoryRailMeta));
       localStorage.setItem("loom_master_creations_meta", JSON.stringify(masterCreationsMeta));
       localStorage.setItem("loom_master_creations_skus", JSON.stringify(masterCreationsSkus));
+      localStorage.setItem("loom_hero_slides", JSON.stringify(heroSlides));
+      localStorage.setItem("loom_hero_preset", activeHeroPreset);
       setCollectionsSaveSuccess(true);
       setTimeout(() => setCollectionsSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Failed to save collections:", err);
       alert("Error saving collections configuration");
+    }
+  };
+
+  const handleSelectHeroPreset = (presetKey: string) => {
+    setActiveHeroPreset(presetKey);
+    if (HERO_SLIDE_PRESETS[presetKey]) {
+      setHeroSlides(HERO_SLIDE_PRESETS[presetKey].slides);
     }
   };
 
@@ -1391,6 +1411,114 @@ export function AdminConsole() {
                 </span>
               </div>
             )}
+
+            {/* HERO BANNER CAROUSEL MANAGEMENT (Home Page Top Carousel) */}
+            <div className="p-6 rounded-2xl bg-[#121216] border border-white/10 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#E5B842] block">
+                    HOMEPAGE HERO BANNER CAROUSEL
+                  </span>
+                  <h2 className="font-serif text-2xl font-bold text-[#F5EFE6] mt-0.5">
+                    Live Hero Carousel Banners
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Full-width luxury edge-to-edge banners. Rotates automatically every 3.5 seconds on the customer storefront.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-[#E5B842] font-semibold">
+                    {heroSlides.length} Active Slides
+                  </span>
+                </div>
+              </div>
+
+              {/* Preset Selector */}
+              <div>
+                <label className="block text-[10px] uppercase font-bold tracking-widest text-gray-400 mb-2">
+                  CHOOSE BANNER SET PRESET
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {Object.entries(HERO_SLIDE_PRESETS).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => handleSelectHeroPreset(key)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        activeHeroPreset === key
+                          ? "bg-[#E5B842]/10 border-[#E5B842] text-white shadow-sm ring-1 ring-[#E5B842]"
+                          : "bg-[#18181F] border-white/10 text-gray-400 hover:text-white hover:border-white/30"
+                      }`}
+                    >
+                      <div className="text-xs font-bold text-[#F5EFE6]">{preset.label}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">
+                        {preset.slides.length} Luxury Banners
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Hero Slides Preview */}
+              <div>
+                <h3 className="text-xs uppercase font-bold tracking-wider text-gray-300 mb-3">
+                  Active Banner Slides (Preview & Destination Links)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {heroSlides.map((slide, idx) => (
+                    <div
+                      key={slide.id || idx}
+                      className="p-3 rounded-xl bg-[#18181F] border border-white/10 space-y-2.5 flex flex-col justify-between"
+                    >
+                      <div className="relative aspect-[1024/227] rounded-lg overflow-hidden bg-black/60 border border-white/10 group">
+                        <img
+                          src={slide.image}
+                          alt={slide.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-[9px] font-bold bg-[#E5B842] text-black">
+                          Slide #{idx + 1}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs">
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-0.5">
+                            Slide Title
+                          </label>
+                          <input
+                            type="text"
+                            value={slide.title}
+                            onChange={(e) => {
+                              const updated = [...heroSlides];
+                              updated[idx] = { ...updated[idx], title: e.target.value };
+                              setHeroSlides(updated);
+                            }}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold tracking-wider text-[#E5B842] mb-0.5">
+                            Click Destination Link
+                          </label>
+                          <input
+                            type="text"
+                            value={slide.href}
+                            onChange={(e) => {
+                              const updated = [...heroSlides];
+                              updated[idx] = { ...updated[idx], href: e.target.value };
+                              setHeroSlides(updated);
+                            }}
+                            className="w-full py-1.5 px-2 rounded bg-black/40 border border-white/10 text-xs text-[#E5B842] focus:outline-none focus:border-[#E5B842]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {/* COLLECTION 1: CURATED WEAVING TIERS */}
             <div className="p-6 rounded-2xl bg-[#121216] border border-white/10 space-y-6">

@@ -78,6 +78,123 @@ export const DEFAULT_COLLECTION_METAS = {
   },
 };
 
+export interface HeroSlide {
+  id: number;
+  image: string;
+  title: string;
+  subtitle: string;
+  href: string;
+}
+
+export const HERO_SLIDE_PRESETS: Record<string, { label: string; slides: HeroSlide[] }> = {
+  set1: {
+    label: "Version 1 (High Quality Cut Banners - Recommended)",
+    slides: [
+      {
+        id: 1,
+        image: "/images/banners/banner-set1-1-dharmavaram-pure-silk.jpg",
+        title: "Dharmavaram Silk Sarees - A Heritage Woven in Silk",
+        subtitle: "Pure Mulberry Silk with Double-Shuttle Korvai Borders",
+        href: "/collections/pure-silk",
+      },
+      {
+        id: 2,
+        image: "/images/banners/banner-set1-2-handloom-heritage.jpg",
+        title: "Handloom Sarees - Pure Weaves. Lasting Grace",
+        subtitle: "Direct From Dharmavaram Pit-Looms Since 1974",
+        href: "/collections/handloom-bridal",
+      },
+      {
+        id: 3,
+        image: "/images/banners/banner-set1-3-semi-kanchipuram.jpg",
+        title: "Semi Kanchipuram Dharmavaram Silks - Royal Elegance. Everyday Grace",
+        subtitle: "High-Velocity Festive Drapes with Tested Antique Gold Zari",
+        href: "/collections/semi-silk",
+      },
+    ],
+  },
+  set2: {
+    label: "Version 2 (Alternative Variation)",
+    slides: [
+      {
+        id: 1,
+        image: "/images/banners/banner-set2-1-dharmavaram-pure-silk.jpg",
+        title: "Dharmavaram Silk Sarees - A Legacy Woven in Silk",
+        subtitle: "Pure Mulberry Silk with Hand-Interlocked Korvai Temple Borders",
+        href: "/collections/pure-silk",
+      },
+      {
+        id: 2,
+        image: "/images/banners/banner-set2-2-handloom-heritage.jpg",
+        title: "Handloom Sarees - Timeless Craft. Everlasting Grace",
+        subtitle: "Woven by Master Artisan Families in Dharmavaram",
+        href: "/collections/handloom-bridal",
+      },
+      {
+        id: 3,
+        image: "/images/banners/banner-set2-3-semi-kanchipuram.jpg",
+        title: "Semi Kanchipuram Dharmavaram Silk Sarees - Tradition with a Touch of Elegance",
+        subtitle: "Royal Drapes with Rich Contrast Zari Pallus",
+        href: "/collections/semi-silk",
+      },
+    ],
+  },
+  set3: {
+    label: "Version 3 (Alternative Variation)",
+    slides: [
+      {
+        id: 1,
+        image: "/images/banners/banner-set3-1-dharmavaram-pure-silk.jpg",
+        title: "Dharmavaram Silk Sarees - Tradition Woven in Every Thread",
+        subtitle: "Traditional Pit-Loom Weaves Since 1974",
+        href: "/collections/pure-silk",
+      },
+      {
+        id: 2,
+        image: "/images/banners/banner-set3-2-handloom-heritage.jpg",
+        title: "Handloom Sarees - Pure Weaves. Lasting Elegance",
+        subtitle: "Authentic Handloom Weaving Cluster",
+        href: "/collections/handloom-bridal",
+      },
+      {
+        id: 3,
+        image: "/images/banners/banner-set3-3-semi-kanchipuram.jpg",
+        title: "Semi Kanchipuram Dharmavaram Silks - Grace of Kanchipuram. Soul of Dharmavaram",
+        subtitle: "Festive Heirloom Silks",
+        href: "/collections/semi-silk",
+      },
+    ],
+  },
+  fullUploads: {
+    label: "All 3 Full Uploaded Image Files",
+    slides: [
+      {
+        id: 1,
+        image: "/images/banners/full-upload-1.jpg",
+        title: "Dharmavaram Silk Heritage - Full Showcase 1",
+        subtitle: "A Heritage Woven in Silk",
+        href: "/collections/pure-silk",
+      },
+      {
+        id: 2,
+        image: "/images/banners/full-upload-2.jpg",
+        title: "Dharmavaram Silk Heritage - Full Showcase 2",
+        subtitle: "A Legacy Woven in Silk",
+        href: "/collections/handloom-bridal",
+      },
+      {
+        id: 3,
+        image: "/images/banners/full-upload-3.jpg",
+        title: "Dharmavaram Silk Heritage - Full Showcase 3",
+        subtitle: "Tradition Woven in Every Thread",
+        href: "/collections/semi-silk",
+      },
+    ],
+  },
+};
+
+export const DEFAULT_HERO_SLIDES = HERO_SLIDE_PRESETS.set1.slides;
+
 /**
  * Helper to fetch all sarees (built-in CATALOG + any custom sarees created by admin)
  */

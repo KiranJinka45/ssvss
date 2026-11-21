@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { HeroEditorial } from "@/components/home/HeroEditorial";
-import { CategoryRail } from "@/components/home/CategoryRail";
 import { MasterCreationsRail } from "@/components/home/MasterCreationsRail";
 import { LoomToWardrobe } from "@/components/home/LoomToWardrobe";
 import { VideoCallBanner } from "@/components/home/VideoCallBanner";
@@ -37,13 +36,10 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Editorial Section */}
+      {/* Hero Editorial Carousel Section - Occupies Full Page */}
       <HeroEditorial />
 
-      {/* Category Rail (Tiers) */}
-      <CategoryRail />
-
-      {/* Featured Master Loom Weaves - Full Width Dynamic Showcase */}
+      {/* Featured Master Loom Weaves - Full Width Dynamic Showcase (Image 1 Style) */}
       <MasterCreationsRail />
 
       {/* Middleman vs Direct Loom Visualizer */}

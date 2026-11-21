@@ -102,6 +102,7 @@ export function Navbar() {
 
   const navLinks: { label: string; href: string; badge?: string }[] = [
     { label: "Home", href: "/" },
+    { label: "Collections", href: "/collections" },
     { label: "Bridal", href: "/collections/handloom-bridal" },
     { label: "Products", href: "/collections/all" },
     { label: "About", href: "/about" },

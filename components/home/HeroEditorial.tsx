@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { DEFAULT_HERO_SLIDES, HeroSlide } from "@/lib/collectionsStore";
 
 export function HeroEditorial() {
@@ -46,23 +46,17 @@ export function HeroEditorial() {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  // Check if any slide is a full upload (taller aspect ratio)
-  const isFullUpload = slides[currentSlide]?.image?.includes("full-upload");
-
   return (
     <section className="relative w-full overflow-hidden bg-[#FAF7F2] border-b border-loom-border/50">
       {/* 
-        Full-Width Luxury Hero Carousel:
-        - Perfectly calibrated height to fit 100% on the screen alongside Curated Weaving Tiers
+        Full-Page Luxury Hero Carousel:
+        - Occupies 100% of the screen height below navbar (1 full page)
         - Opaque backgrounds prevent any ghosting or overlapping text between slides
         - Subtle hover-only edge navigation arrows that never block the model or temple
+        - Floating down-indicator linking to Master Weaver Creations (#showcase)
       */}
       <div
-        className={`relative w-full select-none overflow-hidden group ${
-          isFullUpload
-            ? "aspect-[1024/682] max-h-[460px]"
-            : "w-full h-[150px] sm:h-[170px] md:h-[190px] lg:h-[210px] xl:h-[230px]"
-        }`}
+        className="relative w-full h-[calc(100vh-76px)] min-h-[480px] max-h-[850px] select-none overflow-hidden group"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -77,7 +71,7 @@ export function HeroEditorial() {
               }`}
             >
               <Link
-                href={slide.href}
+                href={slide.href || "/collections"}
                 className="block w-full h-full relative cursor-pointer"
                 title={slide.title}
               >
@@ -104,25 +98,25 @@ export function HeroEditorial() {
               type="button"
               onClick={handlePrev}
               aria-label="Previous Slide"
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             <button
               type="button"
               onClick={handleNext}
               aria-label="Next Slide"
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-1.5 sm:p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </>
         )}
 
-        {/* Carousel Indicators at Bottom Center - Sleek and low so it never overlaps the button */}
+        {/* Carousel Indicators at Bottom Center - Positioned right above the scroll prompt */}
         {slides.length > 1 && (
-          <div className="absolute bottom-1 sm:bottom-1.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20 shadow-xs">
+          <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 shadow-xs">
             {slides.map((_, index) => (
               <button
                 key={index}
@@ -131,13 +125,22 @@ export function HeroEditorial() {
                 aria-label={`Go to slide ${index + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   index === currentSlide
-                    ? "w-5 h-1.5 bg-[#E5B842] shadow-xs"
-                    : "w-1.5 h-1.5 bg-white/50 hover:bg-white"
+                    ? "w-7 h-2 bg-[#E5B842] shadow-xs"
+                    : "w-2 h-2 bg-white/50 hover:bg-white"
                 }`}
               />
             ))}
           </div>
         )}
+
+        {/* Subtle Floating Scroll Down Indicator to next section */}
+        <a
+          href="#showcase"
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/45 hover:bg-black/75 text-white/90 hover:text-white backdrop-blur-xs border border-white/20 text-[11px] font-medium tracking-wider uppercase transition-all shadow-md group-hover:scale-105"
+        >
+          <span>Explore Master Weaves</span>
+          <ChevronDown className="w-3.5 h-3.5 animate-bounce text-[#E5B842]" />
+        </a>
       </div>
     </section>
   );

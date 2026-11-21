@@ -65,7 +65,7 @@ export function MasterCreationsRail() {
   }, []);
 
   return (
-    <section className="py-8 sm:py-12 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
+    <section id="master-creations" className="py-8 sm:py-12 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
           <div>

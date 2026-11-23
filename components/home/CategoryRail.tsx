@@ -25,15 +25,15 @@ export function CategoryRail() {
   return (
     <section
       id="loom-collections"
-      className="min-h-[calc(100vh-90px)] flex flex-col justify-center py-4 sm:py-6 bg-canvas overflow-hidden border-b border-loom-border/60"
+      className="pt-2 sm:pt-2.5 pb-2.5 sm:pb-3 bg-canvas overflow-hidden border-b border-loom-border/60"
     >
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-3 sm:mb-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-2 sm:mb-2.5">
           <div>
             <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-bold text-gold-700 block mb-0.5">
               {meta.eyebrow}
             </span>
-            <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-maroon leading-tight">
+            <h2 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold text-maroon leading-tight">
               {meta.title}
             </h2>
             <p className="text-[11px] sm:text-xs text-loom-bronze mt-0.5 max-w-2xl line-clamp-1">
@@ -42,7 +42,7 @@ export function CategoryRail() {
           </div>
           <Link
             href="/collections/all"
-            className="mt-1.5 md:mt-0 text-[11px] sm:text-xs font-semibold text-maroon hover:text-maroon-700 flex items-center gap-1.5 transition-colors group shrink-0"
+            className="mt-1 md:mt-0 text-[11px] sm:text-xs font-semibold text-maroon hover:text-maroon-700 flex items-center gap-1.5 transition-colors group shrink-0"
           >
             <span>View All 12 Looms</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -59,8 +59,8 @@ export function CategoryRail() {
                 href={targetUrl}
                 className="group relative flex flex-col rounded-xl overflow-hidden bg-canvas-card border border-loom-border/80 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                {/* Clean Image Box - 100% visible, natural colors, NO dark gradient, NO overlapping text */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#FAF7F2]">
+                {/* Enlarged Image Box - 4:3 / 5:4 aspect ratio makes saree image significantly larger & clearer */}
+                <div className="relative aspect-[4/3] sm:aspect-[5/4] w-full overflow-hidden bg-[#FAF7F2]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={cat.image}
@@ -75,9 +75,9 @@ export function CategoryRail() {
                 </div>
 
                 {/* Card Body Details - All Prices & Actions Cleanly Placed Below Image */}
-                <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-between bg-canvas-card">
+                <div className="p-2 sm:p-2.5 flex-1 flex flex-col justify-between bg-canvas-card">
                   <div>
-                    <h3 className="font-serif font-bold text-sm sm:text-base text-maroon group-hover:text-gold-700 transition-colors line-clamp-1">
+                    <h3 className="font-serif font-bold text-xs sm:text-sm text-maroon group-hover:text-gold-700 transition-colors line-clamp-1">
                       {cat.title}
                     </h3>
                     <p className="text-[10px] sm:text-[11px] text-loom-bronze mt-0.5 leading-snug line-clamp-1">
@@ -86,7 +86,7 @@ export function CategoryRail() {
                   </div>
 
                   {/* Clean Price & Action Row - No Overlapping Over Saree Photo */}
-                  <div className="mt-2 pt-2 border-t border-loom-border/60">
+                  <div className="mt-1.5 pt-1.5 border-t border-loom-border/60">
                     <div className="flex items-baseline justify-between gap-1">
                       <div>
                         <span className="block text-xs sm:text-sm font-bold text-maroon font-serif leading-tight">

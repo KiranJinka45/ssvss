@@ -21,9 +21,11 @@ import {
   Phone,
   Mail,
   ChevronRight,
+  Video,
 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { LiveCallModal } from "@/components/product/LiveCallModal";
 
 const TICKER_ITEMS = [
   "CENTRAL SILK BOARD SILK MARK CERTIFIED",
@@ -46,6 +48,7 @@ export function Navbar() {
   const totalCartCount = getTotalItemsCount();
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [editName, setEditName] = useState("");
@@ -181,7 +184,25 @@ export function Navbar() {
         </nav>
 
         {/* Action Icons */}
-        <div className="flex items-center space-x-4 sm:space-x-5">
+        <div className="flex items-center space-x-2.5 sm:space-x-4">
+          {/* Live Loom Video Call Button - positioned left beside the like & cart buttons */}
+          <button
+            type="button"
+            onClick={() => setVideoModalOpen(true)}
+            className="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full border border-gold-600/70 bg-gold-50/80 hover:bg-maroon hover:border-maroon hover:text-canvas text-maroon transition-all shadow-2xs group cursor-pointer active:scale-95"
+            title="Book 2-Minute Live Loom Video Call"
+            aria-label="Book 2-Minute Live Loom Video Call"
+          >
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+            </span>
+            <Video className="w-4 h-4 text-maroon group-hover:text-gold-300 transition-colors shrink-0" />
+            <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase font-sans whitespace-nowrap">
+              Video Call
+            </span>
+          </button>
+
           {/* Wishlist Indicator */}
           <Link
             href="/collections/all"
@@ -503,6 +524,18 @@ export function Navbar() {
                 </button>
               </div>
             )}
+            {/* Live Video Call Option in Mobile Drawer */}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setVideoModalOpen(true);
+              }}
+              className="w-full text-center py-2.5 bg-gradient-to-r from-[#2E0710] to-maroon text-gold-200 font-semibold rounded-md text-sm border border-gold/40 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+            >
+              <Video className="w-4 h-4 text-emerald-400" />
+              <span>Book 2-Minute Live Loom Video Call</span>
+            </button>
             <Link
               href="/wholesale"
               onClick={() => setMobileMenuOpen(false)}
@@ -523,6 +556,12 @@ export function Navbar() {
           </div>
         </div>
       )}
+      {/* Live Loom Video Call Booking Modal */}
+      <LiveCallModal
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        defaultTitle="Live Loom Video Inspection"
+      />
     </header>
   );
 }

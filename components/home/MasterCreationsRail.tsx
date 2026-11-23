@@ -15,6 +15,27 @@ export function MasterCreationsRail() {
   const [meta, setMeta] = useState(DEFAULT_COLLECTION_METAS.masterCreations);
   const [sarees, setSarees] = useState<SareeSKU[]>([]);
 
+  // Helper to ensure "pit-looms." is always kept on one line and never splits across lines
+  const renderSubtitle = (text: string) => {
+    if (!text) return null;
+    const regex = /(pit[-\u2011]looms\.?)/gi;
+    const parts = text.split(regex);
+    return (
+      <>
+        {parts.map((part, idx) => {
+          if (/^pit[-\u2011]looms\.?$/i.test(part)) {
+            return (
+              <span key={idx} className="whitespace-nowrap inline-block">
+                {part.replace(/-/g, "\u2011")}
+              </span>
+            );
+          }
+          return part;
+        })}
+      </>
+    );
+  };
+
   useEffect(() => {
     try {
       // 1. Load custom meta if edited by admin
@@ -65,24 +86,27 @@ export function MasterCreationsRail() {
   }, []);
 
   return (
-    <section id="master-creations" className="py-8 sm:py-12 bg-canvas-surface border-b border-loom-border/60 overflow-hidden">
+    <section
+      id="master-creations"
+      className="min-h-[calc(100vh-80px)] lg:min-h-[calc(100vh-88px)] flex flex-col justify-center py-6 sm:py-10 bg-canvas-surface border-b border-loom-border/60 overflow-hidden scroll-mt-20"
+    >
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 sm:mb-6 gap-3">
+          <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl">
             <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-gold-700 block mb-1">
               {meta.eyebrow}
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-maroon">
               {meta.title}
             </h2>
-            <p className="text-xs sm:text-sm text-loom-bronze mt-1 max-w-2xl">
-              {meta.subtitle}
+            <p className="text-xs sm:text-sm text-loom-bronze mt-1 leading-relaxed">
+              {renderSubtitle(meta.subtitle)}
             </p>
           </div>
 
           <Link
             href="/collections/all"
-            className="mt-3 md:mt-0 px-4 py-2 rounded-lg bg-maroon text-canvas hover:bg-maroon-700 text-xs font-semibold tracking-wide transition-all shadow-sm flex items-center gap-1.5 group w-fit shrink-0"
+            className="mt-2 md:mt-0 px-4 py-2 rounded-lg bg-maroon text-canvas hover:bg-maroon-700 text-xs font-semibold tracking-wide transition-all shadow-sm flex items-center gap-1.5 group w-fit shrink-0"
           >
             <span>View Full 12-Saree Catalog</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-gold-400" />

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { DEFAULT_CATEGORY_TIERS, DEFAULT_COLLECTION_METAS, CategoryTier } from "@/lib/collectionsStore";
 
 export function CategoryRail() {
@@ -25,10 +25,10 @@ export function CategoryRail() {
   return (
     <section
       id="loom-collections"
-      className="pt-2 sm:pt-2.5 pb-2.5 sm:pb-3 bg-canvas overflow-hidden border-b border-loom-border/60"
+      className="min-h-[calc(100vh-80px)] lg:min-h-[calc(100vh-88px)] flex flex-col justify-between pt-3 sm:pt-4 pb-4 sm:pb-5 bg-canvas overflow-hidden border-b border-loom-border/60 scroll-mt-20"
     >
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-2 sm:mb-2.5">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 flex-1 flex flex-col justify-between">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-2.5 sm:mb-3">
           <div>
             <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-bold text-gold-700 block mb-0.5">
               {meta.eyebrow}
@@ -36,7 +36,7 @@ export function CategoryRail() {
             <h2 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold text-maroon leading-tight">
               {meta.title}
             </h2>
-            <p className="text-[11px] sm:text-xs text-loom-bronze mt-0.5 max-w-2xl line-clamp-1">
+            <p className="text-[11px] sm:text-xs text-loom-bronze mt-0.5 max-w-3xl line-clamp-1">
               {meta.subtitle}
             </p>
           </div>
@@ -49,7 +49,7 @@ export function CategoryRail() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 xl:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 xl:gap-5 my-auto">
           {categories.map((cat) => {
             const targetUrl = cat.isWholesale ? "/wholesale" : `/collections/${cat.slug}`;
 
@@ -59,8 +59,8 @@ export function CategoryRail() {
                 href={targetUrl}
                 className="group relative flex flex-col rounded-xl overflow-hidden bg-canvas-card border border-loom-border/80 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                {/* Enlarged Image Box - 4:3 / 5:4 aspect ratio makes saree image significantly larger & clearer */}
-                <div className="relative aspect-[4/3] sm:aspect-[5/4] w-full overflow-hidden bg-[#FAF7F2]">
+                {/* Enlarged Image Box - 1:1 aspect ratio makes saree image significantly larger & clearer */}
+                <div className="relative aspect-[1/1] w-full overflow-hidden bg-[#FAF7F2]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={cat.image}
@@ -106,6 +106,17 @@ export function CategoryRail() {
               </Link>
             );
           })}
+        </div>
+
+        {/* Subtle navigation link to touch/scroll to Master Weaver Creations (3rd Page) */}
+        <div className="flex justify-center pt-2 sm:pt-3">
+          <a
+            href="#master-creations"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-canvas-card hover:bg-[#FAF7F2] border border-loom-border/80 shadow-xs text-[10px] sm:text-[11px] font-medium text-maroon hover:text-gold-700 transition-all group"
+          >
+            <span>Touch to View Master Weaver Creations</span>
+            <ChevronDown className="w-3.5 h-3.5 text-gold-600 group-hover:translate-y-0.5 transition-transform" />
+          </a>
         </div>
       </div>
     </section>

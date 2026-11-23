@@ -69,12 +69,12 @@ export const DEFAULT_COLLECTION_METAS = {
   categoryRail: {
     eyebrow: "Curated Weaving Tiers",
     title: "Explore Our Dharmavaram Loom Collections",
-    subtitle: "From high-velocity festive semi-silk to once-in-a-generation bridal heirloom weaves, every saree is priced transparently direct from our pit-looms.",
+    subtitle: "From high-velocity festive semi-silk to once-in-a-generation bridal heirloom weaves, every saree is priced transparently direct from our pit\u2011looms.",
   },
   masterCreations: {
     eyebrow: "Loom-Fresh Arrivals",
     title: "Master Weaver Creations",
-    subtitle: "Individually woven over 4 to 22 days by master artisan families in Dharmavaram. Direct from the pit-looms.",
+    subtitle: "Individually woven over 4 to 22 days by master artisan families in Dharmavaram. Direct from the pit\u2011looms.",
   },
 };
 

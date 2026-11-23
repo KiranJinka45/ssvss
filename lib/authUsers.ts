@@ -13,23 +13,14 @@ export interface RegisteredUser {
   createdAt: string;
 }
 
-// Seeded real credentials for SSVSS
+// Default seeded account for admin role without exposing plaintext passwords
 export const DEFAULT_USERS: RegisteredUser[] = [
-  {
-    id: "usr_kiran_01",
-    name: "Kiran Kumar",
-    email: "kiranjinkakumar@gmail.com",
-    phone: "9493348129",
-    passwordHash: "Kiran@4518",
-    role: "customer",
-    createdAt: "2026-01-01T00:00:00.000Z",
-  },
   {
     id: "usr_admin_01",
     name: "Loom Admin",
     email: "admin@dharmavaramlooms.com",
     phone: "919493348129",
-    passwordHash: "Admin@2027",
+    passwordHash: "",
     role: "admin",
     createdAt: "2026-01-01T00:00:00.000Z",
   },
@@ -72,14 +63,7 @@ export function getRegisteredUsers(): RegisteredUser[] {
       return DEFAULT_USERS;
     }
     const parsed = JSON.parse(data) as RegisteredUser[];
-    // Ensure default users are always present
-    const hasKiran = parsed.some((u) => normalizeEmail(u.email) === "kiranjinkakumar@gmail.com");
-    if (!hasKiran) {
-      const merged = [...DEFAULT_USERS, ...parsed];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-      return merged;
-    }
-    return parsed;
+    return Array.isArray(parsed) ? parsed : DEFAULT_USERS;
   } catch (err) {
     console.error("Failed to load registered users:", err);
     return DEFAULT_USERS;

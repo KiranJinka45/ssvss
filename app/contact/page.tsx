@@ -13,18 +13,47 @@ import {
   MessageCircle,
   Send,
   Sparkles,
+  AlertCircle,
+  Check,
 } from "lucide-react";
 import { MERCHANT_CONFIG } from "@/lib/config";
+import { validateIndianMobile } from "@/lib/phoneValidation";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [requirement, setRequirement] = useState("Bridal Handloom Saree");
   const [message, setMessage] = useState("");
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    if (raw.length <= 10) {
+      setPhone(raw);
+      if (raw.length > 0) {
+        if (!["6", "7", "8", "9"].includes(raw[0])) {
+          setPhoneError(`Indian mobile numbers must start with 6, 7, 8, or 9 (starts with '${raw[0]}')`);
+        } else if (raw.length === 10) {
+          const res = validateIndianMobile(raw);
+          setPhoneError(res.isValid ? "" : (res.error || "Invalid mobile number"));
+        } else {
+          setPhoneError("");
+        }
+      } else {
+        setPhoneError("");
+      }
+    }
+  };
+
   const handleWhatsAppSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const text = `Namaste SSVSS Master Looms,\n\nMy Name: ${name || "Patron"}\nPhone: ${phone || "N/A"}\nRequirement: ${requirement}\nNote: ${message || "I would like to inquire about your authentic Dharmavaram silk sarees."}`;
+    const phoneRes = validateIndianMobile(phone);
+    if (!phoneRes.isValid) {
+      setPhoneError(phoneRes.error || "Please enter a valid 10-digit Indian mobile number");
+      return;
+    }
+    setPhoneError("");
+    const text = `Namaste SSVSS Master Looms,\n\nMy Name: ${name || "Patron"}\nPhone: +91 ${phoneRes.cleanPhone}\nRequirement: ${requirement}\nNote: ${message || "I would like to inquire about your authentic Dharmavaram silk sarees."}`;
     const url = `https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };
@@ -182,17 +211,40 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-loom-charcoal uppercase tracking-wider mb-1.5">
-                      Phone / WhatsApp Number
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className="w-full px-4 py-2.5 rounded-xl border border-loom-border text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020] bg-[#FAF7F2]/50"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-loom-charcoal uppercase tracking-wider">
+                        Phone / WhatsApp Number *
+                      </label>
+                      {phone.length === 10 && !phoneError && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                          <Check className="w-3.5 h-3.5" /> Valid
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative flex rounded-xl border border-loom-border overflow-hidden bg-white focus-within:ring-2 focus-within:ring-[#5B1020]">
+                      <span className="px-3 py-2.5 bg-canvas-surface border-r border-loom-border text-xs font-bold text-loom-charcoal flex items-center shrink-0">
+                        🇮🇳 +91
+                      </span>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        value={phone}
+                        onChange={handlePhoneChange}
+                        placeholder="9876543210"
+                        className="w-full px-3 py-2.5 text-sm focus:outline-none bg-transparent"
+                      />
+                    </div>
+                    {phoneError ? (
+                      <p className="text-[11px] text-red-600 mt-1 font-medium flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{phoneError}</span>
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-loom-stone mt-1">
+                        Must be a valid 10-digit number starting with 6, 7, 8, or 9
+                      </p>
+                    )}
                   </div>
 
                   <div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveLead } from "@/lib/supabase";
+import { validateIndianMobile } from "@/lib/phoneValidation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +17,19 @@ export async function POST(req: NextRequest) {
     }
 
     const { leadType: _, ...payload } = body;
+
+    // Validate phone number for video call leads
+    if (leadType === "video_call" && payload.phone) {
+      const phoneValidation = validateIndianMobile(payload.phone);
+      if (!phoneValidation.isValid) {
+        return NextResponse.json(
+          { error: phoneValidation.error || "Invalid Indian mobile number." },
+          { status: 400 }
+        );
+      }
+      payload.phone = `+91${phoneValidation.cleanPhone}`;
+    }
+
     const result = await saveLead(leadType, payload);
     return NextResponse.json(result);
   } catch (err: any) {

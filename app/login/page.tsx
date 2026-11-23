@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [tab, setTab] = useState<"signin" | "signup">("signin");
 
   // Sign In states (Email OTP Only)
-  const [email, setEmail] = useState("kiranjinkakumar@gmail.com");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [isSending, setIsSending] = useState(false);

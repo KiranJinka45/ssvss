@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Video, ShieldCheck, Sparkles, MessageCircle, Phone, CheckCircle2 } from "lucide-react";
+import { X, Video, ShieldCheck, Sparkles, MessageCircle, Phone, CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { generateLiveCallWhatsAppUrl } from "@/lib/whatsapp";
 import { formatINR } from "@/lib/pricing";
+import { validateIndianMobile } from "@/lib/phoneValidation";
 
 interface LiveCallModalProps {
   isOpen: boolean;
@@ -32,7 +33,16 @@ export function LiveCallModal({
     // Max 10 digits
     if (raw.length <= 10) {
       setPhone(raw);
-      if (raw.length === 10) {
+      if (raw.length > 0) {
+        if (!["6", "7", "8", "9"].includes(raw[0])) {
+          setPhoneError(`Indian mobile numbers must start with 6, 7, 8, or 9 (starts with '${raw[0]}')`);
+        } else if (raw.length === 10) {
+          const res = validateIndianMobile(raw);
+          setPhoneError(res.isValid ? "" : (res.error || "Invalid mobile number"));
+        } else {
+          setPhoneError("");
+        }
+      } else {
         setPhoneError("");
       }
     }
@@ -46,12 +56,13 @@ export function LiveCallModal({
       return;
     }
 
-    const cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length !== 10) {
-      setPhoneError("Please enter a valid 10-digit Indian mobile number");
+    const validation = validateIndianMobile(phone);
+    if (!validation.isValid) {
+      setPhoneError(validation.error || "Please enter a valid 10-digit Indian mobile number");
       return;
     }
 
+    const cleanPhone = validation.cleanPhone;
     setPhoneError("");
     setIsRedirecting(true);
 
@@ -171,25 +182,47 @@ export function LiveCallModal({
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1">
-              WhatsApp / Phone Number *
-            </label>
-            <div className="relative flex rounded-xl border border-loom-border overflow-hidden bg-white focus-within:border-maroon shadow-sm">
-              <span className="px-3.5 py-3 bg-canvas-surface border-r border-loom-border text-xs font-bold text-loom-charcoal flex items-center gap-1">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal">
+                WhatsApp / Mobile Number *
+              </label>
+              {phone.length === 10 && !phoneError && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-silk-emerald">
+                  <Check className="w-3.5 h-3.5" /> Valid Mobile
+                </span>
+              )}
+            </div>
+            <div
+              className={`relative flex rounded-xl border overflow-hidden bg-white shadow-sm transition-all ${
+                phoneError
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : phone.length === 10
+                  ? "border-silk-emerald ring-1 ring-silk-emerald"
+                  : "border-loom-border focus-within:border-maroon"
+              }`}
+            >
+              <span className="px-3.5 py-3 bg-canvas-surface border-r border-loom-border text-xs font-bold text-loom-charcoal flex items-center gap-1 shrink-0">
                 🇮🇳 +91
               </span>
               <input
                 type="tel"
                 required
                 maxLength={10}
-                placeholder="9876543210"
+                placeholder="Enter 10-digit number (e.g. 9876543210)"
                 value={phone}
                 onChange={handlePhoneChange}
                 className="w-full px-3.5 py-3 text-sm text-loom-charcoal font-mono tracking-wider focus:outline-none"
               />
             </div>
-            {phoneError && (
-              <p className="text-[11px] text-red-600 mt-1 font-medium">{phoneError}</p>
+            {phoneError ? (
+              <p className="text-[11px] text-red-600 mt-1.5 font-medium flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{phoneError}</span>
+              </p>
+            ) : (
+              <p className="text-[10px] text-loom-stone mt-1">
+                Indian mobile numbers must start with 6, 7, 8, or 9
+              </p>
             )}
           </div>
 
@@ -207,8 +240,12 @@ export function LiveCallModal({
           {/* Primary Submit CTA with Pulsing WhatsApp Video Icon */}
           <button
             type="submit"
-            disabled={isRedirecting}
-            className="w-full py-4 px-5 rounded-2xl bg-silk-emerald hover:bg-emerald-800 text-canvas font-bold text-sm tracking-wide shadow-lg transition-all flex items-center justify-center gap-2.5 group relative overflow-hidden"
+            disabled={isRedirecting || Boolean(phoneError) || phone.length !== 10}
+            className={`w-full py-4 px-5 rounded-2xl bg-silk-emerald hover:bg-emerald-800 text-canvas font-bold text-sm tracking-wide shadow-lg transition-all flex items-center justify-center gap-2.5 group relative overflow-hidden ${
+              Boolean(phoneError) || phone.length !== 10
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer"
+            }`}
           >
             <div className="relative flex items-center justify-center">
               <Video className="w-5 h-5 text-white" />

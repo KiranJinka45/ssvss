@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   User,
   Mail,
+  Phone,
   ArrowRight,
   CheckCircle2,
   AlertCircle,
@@ -16,6 +17,7 @@ import {
 import { useAuthStore } from "@/store/useAuthStore";
 import { registerNewUser } from "@/lib/authUsers";
 import { validateEmailWithTypoCheck } from "@/lib/validation";
+import { validateIndianMobile } from "@/lib/phoneValidation";
 
 function SignupFormContent() {
   const router = useRouter();
@@ -24,6 +26,7 @@ function SignupFormContent() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
@@ -73,6 +76,12 @@ function SignupFormContent() {
       return;
     }
 
+    const phoneCheck = validateIndianMobile(phone);
+    if (!phoneCheck.isValid) {
+      setErrorMessage(phoneCheck.error || "Please enter a valid 10-digit Indian mobile number.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/auth/signup", {
@@ -81,6 +90,7 @@ function SignupFormContent() {
         body: JSON.stringify({
           name: cleanName,
           email: emailCheck.normalized,
+          phone: phoneCheck.cleanPhone,
         }),
       });
       const data = await res.json();
@@ -95,7 +105,7 @@ function SignupFormContent() {
       registerNewUser({
         name: cleanName,
         email: emailCheck.normalized,
-        phone: "",
+        phone: phoneCheck.formattedPhone,
         password: "",
       });
 
@@ -180,7 +190,7 @@ function SignupFormContent() {
             </div>
           )}
 
-          {/* 2-Field Registration Form (Zero OTP) */}
+          {/* 3-Field Registration Form: Name, Email, Phone Number (Zero OTP) */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Field 1: Full Name */}
             <div>
@@ -237,6 +247,32 @@ function SignupFormContent() {
                   </span>
                 </button>
               )}
+            </div>
+
+            {/* Field 3: Phone Number */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-loom-charcoal mb-1.5">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="tel"
+                  required
+                  inputMode="numeric"
+                  maxLength={14}
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/[^\d+\s-]/g, ""));
+                    setErrorMessage(null);
+                  }}
+                  placeholder="e.g. 9493348129"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-loom-border bg-[#FAF7F2]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#5B1020]"
+                />
+              </div>
+              <p className="text-[11px] text-loom-stone mt-1">
+                10-digit Indian mobile number starting with 6, 7, 8, or 9.
+              </p>
             </div>
 
             <button

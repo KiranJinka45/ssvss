@@ -195,6 +195,7 @@ function LoginFormContent() {
       loginWithUser({
         name: data.user?.name || cleanMail.split("@")[0],
         email: data.user?.email || cleanMail,
+        phone: data.user?.phone || "",
         role: data.user?.role || "customer",
       });
 

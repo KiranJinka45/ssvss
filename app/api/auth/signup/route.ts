@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAppUser, USER_REGISTRY_COOKIE } from "@/lib/userStore";
 import { validateEmailWithTypoCheck } from "@/lib/validation";
+import { validateIndianMobile } from "@/lib/phoneValidation";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const rawName: string = body.name || "";
     const rawEmail: string = body.email || "";
+    const rawPhone: string = body.phone || "";
 
     const cleanName = rawName.trim();
     if (cleanName.length < 2) {
@@ -24,9 +26,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const phoneCheck = validateIndianMobile(rawPhone);
+    if (!phoneCheck.isValid) {
+      return NextResponse.json(
+        { error: phoneCheck.error || "Please enter a valid 10-digit Indian mobile number." },
+        { status: 400 }
+      );
+    }
+
     const { user, alreadyExists, cookieValue } = await createAppUser(
       cleanName,
-      emailCheck.normalized
+      emailCheck.normalized,
+      phoneCheck.formattedPhone
     );
 
     const response = NextResponse.json({

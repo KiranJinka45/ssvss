@@ -16,6 +16,7 @@ export interface AppUser {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   createdAt: string;
 }
 
@@ -105,7 +106,7 @@ export async function findAppUserByEmail(rawEmail: string): Promise<AppUser | nu
     try {
       const { data, error } = await supabase
         .from("app_users")
-        .select("id, name, email, created_at")
+        .select("id, name, email, phone, created_at")
         .eq("email", cleanEmail)
         .maybeSingle();
 
@@ -114,6 +115,7 @@ export async function findAppUserByEmail(rawEmail: string): Promise<AppUser | nu
           id: data.id,
           name: data.name,
           email: data.email,
+          phone: data.phone || "",
           createdAt: data.created_at || new Date().toISOString(),
         };
       }
@@ -147,10 +149,12 @@ export async function findAppUserByEmail(rawEmail: string): Promise<AppUser | nu
 
 export async function createAppUser(
   name: string,
-  rawEmail: string
+  rawEmail: string,
+  rawPhone = ""
 ): Promise<{ user: AppUser; alreadyExists: boolean; cookieValue: string }> {
   const cleanEmail = normalizeEmail(rawEmail);
   const cleanName = name.trim();
+  const cleanPhone = rawPhone.trim();
 
   const existing = await findAppUserByEmail(cleanEmail);
   const cookieUsers = await getCookieUsers();
@@ -176,6 +180,7 @@ export async function createAppUser(
     id: `usr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     name: cleanName,
     email: cleanEmail,
+    phone: cleanPhone,
     createdAt: new Date().toISOString(),
   };
 
@@ -188,6 +193,7 @@ export async function createAppUser(
           id: newUser.id,
           name: newUser.name,
           email: newUser.email,
+          phone: newUser.phone,
           created_at: newUser.createdAt,
         })
         .select()

@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
         id: registeredUser?.id || `usr_${Date.now()}`,
         name: registeredUser?.name || fallbackName,
         email: targetEmail,
+        phone: registeredUser?.phone || "",
         role: "customer",
       },
     });

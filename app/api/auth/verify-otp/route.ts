@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerOtp, clearServerOtp } from "@/lib/otpStore";
+import { getServerOtp, clearServerOtp, verifyOtpToken } from "@/lib/otpStore";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, identifier, otp } = await req.json();
+    const { email, identifier, otp, token } = await req.json();
     const targetEmail = (email || identifier || "").trim().toLowerCase();
 
     if (!targetEmail || !otp) {
@@ -14,34 +14,55 @@ export async function POST(req: NextRequest) {
     }
 
     const enteredOtp = otp.toString().trim();
-    const stored = getServerOtp(targetEmail);
+    let isOtpValid = false;
+    let failureError = "";
 
-    if (!stored) {
+    // 1. Verify stateless HMAC token (Vercel Serverless Function safe)
+    if (token) {
+      const tokenResult = verifyOtpToken(targetEmail, enteredOtp, token);
+      if (tokenResult.isValid) {
+        isOtpValid = true;
+      } else {
+        failureError = tokenResult.error || "Invalid OTP code.";
+      }
+    }
+
+    // 2. Fall back to server in-memory store
+    if (!isOtpValid) {
+      const stored = getServerOtp(targetEmail);
+      if (stored) {
+        if (Date.now() > stored.expiry) {
+          clearServerOtp(targetEmail);
+          return NextResponse.json(
+            { error: "This OTP has expired. Please click Resend OTP to receive a new code." },
+            { status: 400 }
+          );
+        }
+        if (stored.code === enteredOtp) {
+          isOtpValid = true;
+          clearServerOtp(targetEmail);
+        } else {
+          failureError = "Incorrect OTP code! Please enter the exact 6-digit code.";
+        }
+      }
+    }
+
+    if (!isOtpValid) {
       return NextResponse.json(
-        { error: "No active OTP found for this email. Please request a new OTP code." },
+        {
+          error:
+            failureError ||
+            "Incorrect OTP code! Please enter the latest 6-digit code sent to your email.",
+        },
         { status: 400 }
       );
     }
 
-    if (Date.now() > stored.expiry) {
-      clearServerOtp(targetEmail);
-      return NextResponse.json(
-        { error: "This OTP has expired. Please click Resend OTP to receive a new code." },
-        { status: 400 }
-      );
-    }
+    const isOwner =
+      targetEmail === "kiranjinkakumar@gmail.com" ||
+      targetEmail === "kiranjinka45@gmail.com" ||
+      targetEmail.includes("kiranjinka");
 
-    if (stored.code !== enteredOtp) {
-      return NextResponse.json(
-        { error: "Incorrect OTP code! Please enter the latest 6-digit code sent to your email." },
-        { status: 400 }
-      );
-    }
-
-    // OTP matched! Consume the code so it cannot be reused
-    clearServerOtp(targetEmail);
-
-    const isOwner = targetEmail === "kiranjinkakumar@gmail.com" || targetEmail.includes("kiranjinka");
     return NextResponse.json({
       success: true,
       user: {

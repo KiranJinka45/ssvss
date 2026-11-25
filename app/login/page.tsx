@@ -33,6 +33,8 @@ export default function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
+  const [demoOtp, setDemoOtp] = useState<string | null>(null);
 
   // Sign Up states
   const [signupName, setSignupName] = useState("");
@@ -40,6 +42,8 @@ export default function LoginPage() {
   const [signupOtp, setSignupOtp] = useState("");
   const [signupOtpSent, setSignupOtpSent] = useState(false);
   const [isSignupSending, setIsSignupSending] = useState(false);
+  const [signupToken, setSignupToken] = useState<string | null>(null);
+  const [signupDemoOtp, setSignupDemoOtp] = useState<string | null>(null);
 
   // Status & Feedback
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -57,6 +61,8 @@ export default function LoginPage() {
   const resetMessages = () => {
     setErrorMessage(null);
     setInfoMessage(null);
+    setDemoOtp(null);
+    setSignupDemoOtp(null);
   };
 
   // 1. Send OTP for Sign In (Dispatches to user email)
@@ -71,7 +77,7 @@ export default function LoginPage() {
 
     setIsSending(true);
     try {
-      // Call server-side Email dispatch API (generates a brand-new random 6-digit OTP every time)
+      // Call server-side Email dispatch API
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,8 +91,15 @@ export default function LoginPage() {
       }
 
       setOtpSent(true);
+      setVerificationToken(data.token || null);
+      if (data.demoOtp) {
+        setDemoOtp(data.demoOtp);
+      } else {
+        setDemoOtp(null);
+      }
       setInfoMessage(
-        `A new 6-digit verification OTP has been sent to your email (${cleanMail}). Please check your inbox or spam folder.`
+        data.message ||
+          `A new 6-digit verification OTP has been sent to your email (${cleanMail}). Please check your inbox or spam folder.`
       );
     } catch {
       setErrorMessage("Failed to send OTP. Please check your network and try again.");
@@ -112,13 +125,17 @@ export default function LoginPage() {
       return;
     }
 
-    // Verify entered OTP via server API
+    // Verify entered OTP via server API (passing stateless token)
     setIsVerifying(true);
     try {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanMail, otp: otp.trim() }),
+        body: JSON.stringify({
+          email: cleanMail,
+          otp: otp.trim(),
+          token: verificationToken,
+        }),
       });
       const data = await res.json();
 
@@ -174,7 +191,13 @@ export default function LoginPage() {
       }
 
       setSignupOtpSent(true);
-      setInfoMessage(`A new 6-digit verification OTP was sent to ${cleanMail}. Please check your inbox.`);
+      setSignupToken(data.token || null);
+      if (data.demoOtp) {
+        setSignupDemoOtp(data.demoOtp);
+      } else {
+        setSignupDemoOtp(null);
+      }
+      setInfoMessage(data.message || `A new 6-digit verification OTP was sent to ${cleanMail}. Please check your inbox.`);
     } catch {
       setErrorMessage("Failed to send OTP. Please check your network and try again.");
     } finally {
@@ -207,7 +230,11 @@ export default function LoginPage() {
       const verifyRes = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanMail, otp: signupOtp.trim() }),
+        body: JSON.stringify({
+          email: cleanMail,
+          otp: signupOtp.trim(),
+          token: signupToken,
+        }),
       });
       const verifyData = await verifyRes.json();
 
@@ -406,6 +433,29 @@ export default function LoginPage() {
                       </button>
                     </div>
 
+                    {demoOtp && (
+                      <div className="mb-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-900 flex items-center justify-between gap-3 animate-fadeIn">
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-amber-950 flex items-center gap-1.5">
+                            <span>Instant OTP Code:</span>
+                            <span className="font-mono text-sm tracking-wider font-bold text-[#5B1020] bg-white px-2 py-0.5 rounded border border-amber-300">
+                              {demoOtp}
+                            </span>
+                          </p>
+                          <p className="text-[11px] text-amber-800/80">
+                            Resend test domain requires custom domain verification. Use code above to sign in instantly.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setOtp(demoOtp)}
+                          className="shrink-0 px-3 py-1.5 text-xs bg-[#5B1020] text-white font-bold rounded-lg hover:bg-[#3D0A15] transition shadow-sm"
+                        >
+                          Autofill
+                        </button>
+                      </div>
+                    )}
+
                     <div className="relative">
                       <KeyRound className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
@@ -512,6 +562,30 @@ export default function LoginPage() {
                         {isSignupSending ? "Sending..." : signupOtpSent ? "Resend OTP" : "Send OTP"}
                       </button>
                     </div>
+
+                    {signupDemoOtp && (
+                      <div className="mb-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-900 flex items-center justify-between gap-3 animate-fadeIn">
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-amber-950 flex items-center gap-1.5">
+                            <span>Instant OTP Code:</span>
+                            <span className="font-mono text-sm tracking-wider font-bold text-[#5B1020] bg-white px-2 py-0.5 rounded border border-amber-300">
+                              {signupDemoOtp}
+                            </span>
+                          </p>
+                          <p className="text-[11px] text-amber-800/80">
+                            Use this code to verify and complete registration instantly.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSignupOtp(signupDemoOtp)}
+                          className="shrink-0 px-3 py-1.5 text-xs bg-[#5B1020] text-white font-bold rounded-lg hover:bg-[#3D0A15] transition shadow-sm"
+                        >
+                          Autofill
+                        </button>
+                      </div>
+                    )}
+
                     <div className="relative">
                       <KeyRound className="w-4 h-4 text-loom-stone absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input

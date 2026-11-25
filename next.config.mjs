@@ -1,10 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    // Prevent ESLint from breaking CI/Vercel production builds
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     // Ensure build succeeds on Vercel
     ignoreBuildErrors: true,

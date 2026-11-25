@@ -5,6 +5,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { getSafeStorage } from "@/lib/storage";
 import { SareeSKU } from "@/data/catalog";
 import { getB2BTier, FIXED_WHOLESALE_BASE_PRICES } from "@/lib/pricing";
 
@@ -184,7 +185,7 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "dharmavaram_cart_storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(getSafeStorage),
       partialize: (state) => ({
         items: state.items,
         wishlistSkus: state.wishlistSkus,

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { getSafeStorage } from "@/lib/storage";
 
 export interface UserProfile {
   name: string;
@@ -112,7 +113,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "dharmavaram_auth_state",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(getSafeStorage),
     }
   )
 );

@@ -135,22 +135,22 @@ export function Navbar() {
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 h-14 sm:h-16 flex items-center justify-between">
+      <div className="w-full px-2.5 sm:px-6 lg:px-10 xl:px-14 2xl:px-16 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 text-loom-charcoal hover:text-maroon transition-colors"
+          className="lg:hidden p-1.5 sm:p-2 text-loom-charcoal hover:text-maroon transition-colors shrink-0"
           aria-label="Toggle Navigation Menu"
         >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
         </button>
 
         {/* Brand Editorial Logo */}
-        <Link href="/" className="flex flex-col items-center text-center">
-          <span className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-maroon hover:opacity-90 transition-opacity">
+        <Link href="/" className="flex flex-col items-center text-center shrink-0">
+          <span className="font-serif text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-maroon hover:opacity-90 transition-opacity leading-tight">
             DHARMAVARAM
           </span>
-          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-gold font-medium">
+          <span className="text-[8px] xs:text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-gold font-medium leading-none mt-0.5">
             Handloom Silk Looms • Estd. 1974
           </span>
         </Link>
@@ -184,12 +184,12 @@ export function Navbar() {
         </nav>
 
         {/* Action Icons */}
-        <div className="flex items-center space-x-2.5 sm:space-x-4">
+        <div className="flex items-center space-x-1.5 sm:space-x-3.5 shrink-0">
           {/* Live Loom Video Call Button - positioned left beside the like & cart buttons */}
           <button
             type="button"
             onClick={() => setVideoModalOpen(true)}
-            className="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full border border-gold-600/70 bg-gold-50/80 hover:bg-maroon hover:border-maroon hover:text-canvas text-maroon transition-all shadow-2xs group cursor-pointer active:scale-95"
+            className="relative flex items-center gap-1 sm:gap-1.5 p-1.5 sm:px-3 sm:py-2 rounded-full border border-gold-600/70 bg-gold-50/80 hover:bg-maroon hover:border-maroon hover:text-canvas text-maroon transition-all shadow-2xs group cursor-pointer active:scale-95 shrink-0"
             title="Book 2-Minute Live Loom Video Call"
             aria-label="Book 2-Minute Live Loom Video Call"
           >
@@ -197,8 +197,8 @@ export function Navbar() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
             </span>
-            <Video className="w-4 h-4 text-maroon group-hover:text-gold-300 transition-colors shrink-0" />
-            <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase font-sans whitespace-nowrap">
+            <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-maroon group-hover:text-gold-300 transition-colors shrink-0" />
+            <span className="hidden sm:inline text-[11px] sm:text-xs font-semibold tracking-wider uppercase font-sans whitespace-nowrap">
               Video Call
             </span>
           </button>
@@ -206,12 +206,12 @@ export function Navbar() {
           {/* Wishlist Indicator */}
           <Link
             href="/collections/all"
-            className="relative p-2 text-loom-charcoal hover:text-maroon transition-colors"
+            className="relative p-1.5 sm:p-2 text-loom-charcoal hover:text-maroon transition-colors"
             title="Wishlist"
           >
-            <Heart className="w-5 h-5" />
+            <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
             {mounted && wishlistSkus.length > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-maroon text-canvas text-[10px] font-bold flex items-center justify-center">
+              <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-maroon text-canvas text-[9px] sm:text-[10px] font-bold flex items-center justify-center">
                 {wishlistSkus.length}
               </span>
             )}
@@ -220,13 +220,13 @@ export function Navbar() {
           {/* Cart Drawer Trigger */}
           <button
             onClick={openCart}
-            className="relative p-2 sm:p-2.5 bg-maroon hover:bg-maroon-700 text-canvas rounded-full shadow-luxury transition-all flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5"
+            className="relative p-1.5 sm:p-2.5 bg-maroon hover:bg-maroon-700 text-canvas rounded-full shadow-luxury transition-all flex items-center gap-1 sm:gap-2 px-2 sm:px-3.5"
             aria-label="Open Cart"
           >
-            <ShoppingBag className="w-4 h-4 text-gold-400" />
-            <span className="text-xs font-semibold tracking-wider">CART</span>
+            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold-400" />
+            <span className="hidden sm:inline text-xs font-semibold tracking-wider">CART</span>
             {mounted && totalCartCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-gold text-maroon-900 text-[11px] font-bold flex items-center justify-center shadow-sm">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gold text-maroon-900 text-[10px] sm:text-[11px] font-bold flex items-center justify-center shadow-sm">
                 {totalCartCount}
               </span>
             )}
@@ -270,7 +270,7 @@ export function Navbar() {
 
               {/* Profile Dropdown Menu - Simple, Dynamic, Silk Luxury */}
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-3 w-80 sm:w-88 rounded-2xl bg-[#FCFAF6] border border-gold-600/30 text-loom-charcoal shadow-[0_20px_50px_rgba(74,14,23,0.18)] p-5 z-50 animate-fadeIn space-y-4">
+                <div className="absolute right-0 mt-3 w-[calc(100vw-24px)] max-w-xs sm:w-88 rounded-2xl bg-[#FCFAF6] border border-gold-600/30 text-loom-charcoal shadow-[0_20px_50px_rgba(74,14,23,0.18)] p-4 sm:p-5 z-50 animate-fadeIn space-y-3.5 sm:space-y-4">
                   {/* Header: Monogram, Dynamic Greeting, Role & Edit Toggle */}
                   <div className="flex items-start justify-between pb-3.5 border-b border-loom-border/60">
                     <div className="flex items-center gap-3">

@@ -145,7 +145,7 @@ export function ProductCard({ saree }: ProductCardProps) {
                 setTimeout(() => setIsAdded(false), 2000);
               }}
               disabled={isSoldOut}
-              className={`w-full py-1.5 px-1.5 rounded-md border transition-all text-[11px] font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 active:scale-98 ${
+              className={`w-full py-1.5 px-1 sm:px-1.5 rounded-md border transition-all text-[10px] sm:text-[11px] font-semibold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 active:scale-98 ${
                 isAdded
                   ? "bg-emerald-700 border-emerald-700 text-white"
                   : "border-maroon text-maroon hover:bg-maroon hover:text-canvas"
@@ -165,7 +165,7 @@ export function ProductCard({ saree }: ProductCardProps) {
               href={quickWhatsAppUrl}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-1.5 px-1.5 rounded-md bg-silk-emerald hover:bg-emerald-800 text-canvas text-[11px] font-semibold tracking-wide transition-colors flex items-center justify-center gap-1 shadow-sm truncate"
+              className="w-full py-1.5 px-1 sm:px-1.5 rounded-md bg-silk-emerald hover:bg-emerald-800 text-canvas text-[10px] sm:text-[11px] font-semibold tracking-wide transition-colors flex items-center justify-center gap-1 shadow-sm truncate"
               title="Order directly on WhatsApp with 0% extra gateway fees"
             >
               <MessageCircle className="w-3 h-3 fill-canvas shrink-0" />

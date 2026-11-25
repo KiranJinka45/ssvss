@@ -49,7 +49,7 @@ export function CategoryRail() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 xl:gap-5 my-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 xl:gap-5 my-auto">
           {categories.map((cat) => {
             const targetUrl = cat.isWholesale ? "/wholesale" : `/collections/${cat.slug}`;
 
@@ -75,12 +75,12 @@ export function CategoryRail() {
                 </div>
 
                 {/* Card Body Details - All Prices & Actions Cleanly Placed Below Image */}
-                <div className="p-2 sm:p-2.5 flex-1 flex flex-col justify-between bg-canvas-card">
+                <div className="p-1.5 xs:p-2 sm:p-2.5 flex-1 flex flex-col justify-between bg-canvas-card">
                   <div>
                     <h3 className="font-serif font-bold text-xs sm:text-sm text-maroon group-hover:text-gold-700 transition-colors line-clamp-1">
                       {cat.title}
                     </h3>
-                    <p className="text-[10px] sm:text-[11px] text-loom-bronze mt-0.5 leading-snug line-clamp-1">
+                    <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-loom-bronze mt-0.5 leading-snug line-clamp-1">
                       {cat.description}
                     </p>
                   </div>
@@ -89,16 +89,16 @@ export function CategoryRail() {
                   <div className="mt-1.5 pt-1.5 border-t border-loom-border/60">
                     <div className="flex items-baseline justify-between gap-1">
                       <div>
-                        <span className="block text-xs sm:text-sm font-bold text-maroon font-serif leading-tight">
+                        <span className="block text-[11px] xs:text-xs sm:text-sm font-bold text-maroon font-serif leading-tight">
                           {cat.loomPrice}
                         </span>
-                        <span className="block text-[9px] text-loom-stone line-through leading-none mt-0.5">
+                        <span className="block text-[8px] xs:text-[9px] text-loom-stone line-through leading-none mt-0.5">
                           {cat.anchorPrice}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold text-maroon group-hover:text-gold-700 transition-colors shrink-0">
+                      <div className="flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[11px] font-semibold text-maroon group-hover:text-gold-700 transition-colors shrink-0">
                         <span>{cat.isWholesale ? "Unlock Tiers" : "Browse Weaves"}</span>
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>

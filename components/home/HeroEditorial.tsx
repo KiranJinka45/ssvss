@@ -10,6 +10,33 @@ export function HeroEditorial() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Touch swipe support for mobile devices
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const minSwipeDistance = 45;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    } else if (isRightSwipe) {
+      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    }
+  };
+
   // Load custom hero slides from localStorage if configured
   useEffect(() => {
     try {
@@ -59,9 +86,12 @@ export function HeroEditorial() {
         - Floating down-arrow button to smoothly scroll down to Dharmavaram Loom Collections (2nd page)
       */}
       <div
-        className="relative w-full h-[calc(100vh-96px)] min-h-[460px] max-h-[850px] select-none overflow-hidden group"
+        className="relative w-full h-[calc(100vh-96px)] min-h-[460px] max-h-[850px] select-none overflow-hidden group touch-pan-y"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {slides.map((slide, index) => {
           const isActive = index === currentSlide;
@@ -101,18 +131,18 @@ export function HeroEditorial() {
               type="button"
               onClick={handlePrev}
               aria-label="Previous Slide"
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+              className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/45 sm:bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-70 sm:opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
             </button>
 
             <button
               type="button"
               onClick={handleNext}
               aria-label="Next Slide"
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+              className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/45 sm:bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-70 sm:opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
             </button>
           </>
         )}

@@ -105,8 +105,8 @@ export function LiveCallModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-loom-charcoal/70 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md rounded-3xl bg-canvas border-2 border-gold/50 shadow-2xl p-6 sm:p-8 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-loom-charcoal/70 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-canvas border-2 border-gold/50 shadow-2xl p-4 sm:p-8">
         {/* Close Button */}
         <button
           onClick={onClose}

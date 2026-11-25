@@ -252,6 +252,29 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
     setActiveSlideIndex((prev) => (prev === mediaSlides.length - 1 ? 0 : prev + 1));
   };
 
+  // Touch swipe support for PDP media gallery
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX || mediaSlides.length <= 1) return;
+    const distance = touchStartX - touchEndX;
+    if (distance > 45) {
+      handleNextSlide();
+    } else if (distance < -45) {
+      handlePrevSlide();
+    }
+  };
+
   // WhatsApp instant order URL
   const whatsappUrl = `https://wa.me/${MERCHANT_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(
     `Hello Dharmavaram Silk Looms, I want to order this saree:\n\n*Product:* ${currentSaree.title}\n*SKU:* ${currentSaree.sku}\n*Fabric:* ${currentSaree.fabric}\n*Color:* ${currentSaree.colorName}\n*Price:* ₹${currentSaree.price.toLocaleString("en-IN")}\n*Quantity:* ${quantity}\n\nPlease share payment details and dispatch confirmation.`
@@ -275,7 +298,12 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* LEFT COLUMN: Clean Large Showcase (NO Thumbnails On The Left Side) */}
           <div className="lg:col-span-7 w-full">
-            <div className="relative w-full rounded-2xl overflow-hidden bg-white border border-gray-200/90 shadow-sm group aspect-[3/4] max-h-[520px] flex items-center justify-center">
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="relative w-full rounded-2xl overflow-hidden bg-white border border-gray-200/90 shadow-sm group aspect-[3/4] max-h-[520px] flex items-center justify-center touch-pan-y"
+            >
               {/* Media Content: Photo or Video */}
               {currentSlide?.type === "video" ? (
                 <div className="w-full h-full bg-black flex items-center justify-center">
@@ -345,7 +373,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                     type="button"
                     onClick={handlePrevSlide}
                     aria-label="Previous slide"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100 z-10"
+                    className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100 z-10"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -353,7 +381,7 @@ export function ProductDetailView({ saree, similarSarees }: ProductDetailViewPro
                     type="button"
                     onClick={handleNextSlide}
                     aria-label="Next slide"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100 z-10"
+                    className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-md opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all hover:scale-105 border border-gray-100 z-10"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

@@ -64,10 +64,10 @@ export function LoomToWardrobe() {
           </p>
 
           {/* Tab Selector */}
-          <div className="inline-flex items-center p-1 rounded-xl bg-canvas border border-loom-border/80 mt-6 shadow-sm">
+          <div className="inline-flex flex-wrap items-center justify-center p-1 rounded-xl bg-canvas border border-loom-border/80 mt-6 shadow-sm max-w-full gap-1">
             <button
               onClick={() => setActiveTab("pure-silk")}
-              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 activeTab === "pure-silk"
                   ? "bg-maroon text-canvas shadow-sm"
                   : "text-loom-bronze hover:text-maroon"
@@ -77,7 +77,7 @@ export function LoomToWardrobe() {
             </button>
             <button
               onClick={() => setActiveTab("bridal")}
-              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 activeTab === "bridal"
                   ? "bg-maroon text-canvas shadow-sm"
                   : "text-loom-bronze hover:text-maroon"

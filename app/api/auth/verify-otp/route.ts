@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerOtp, clearServerOtp, verifyOtpToken } from "@/lib/otpStore";
+import {
+  getServerOtp,
+  clearServerOtp,
+  verifyOtpToken,
+  verifySupabaseOtp,
+} from "@/lib/otpStore";
+import { findAppUserByEmail } from "@/lib/userStore";
+import { normalizeEmail } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
     const { email, identifier, otp, token } = await req.json();
-    const targetEmail = (email || identifier || "").trim().toLowerCase();
+    const targetEmail = normalizeEmail(email || identifier || "");
 
     if (!targetEmail || !otp) {
       return NextResponse.json(
@@ -17,8 +24,18 @@ export async function POST(req: NextRequest) {
     let isOtpValid = false;
     let failureError = "";
 
-    // 1. Verify stateless HMAC token (Vercel Serverless Function safe)
-    if (token) {
+    // 1. Check Supabase `otp_codes` if configured
+    const supaResult = await verifySupabaseOtp(targetEmail, enteredOtp);
+    if (supaResult.found) {
+      if (supaResult.isValid) {
+        isOtpValid = true;
+      } else {
+        failureError = supaResult.error || "Invalid or expired OTP.";
+      }
+    }
+
+    // 2. Verify stateless HMAC token (Vercel Serverless safe)
+    if (!isOtpValid && token) {
       const tokenResult = verifyOtpToken(targetEmail, enteredOtp, token);
       if (tokenResult.isValid) {
         isOtpValid = true;
@@ -27,7 +44,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Fall back to server in-memory store
+    // 3. Fall back to server in-memory store
     if (!isOtpValid) {
       const stored = getServerOtp(targetEmail);
       if (stored) {
@@ -58,15 +75,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isOwner =
-      targetEmail === "kiranjinkakumar@gmail.com" ||
-      targetEmail === "kiranjinka45@gmail.com" ||
-      targetEmail.includes("kiranjinka");
+    // Load registered user profile
+    const registeredUser = await findAppUserByEmail(targetEmail);
+    const fallbackName =
+      targetEmail === "kiranjinkakumar@gmail.com" || targetEmail === "kiranjinka45@gmail.com"
+        ? "Kiran Kumar"
+        : targetEmail.split("@")[0];
 
     return NextResponse.json({
       success: true,
       user: {
-        name: isOwner ? "Kiran Kumar" : targetEmail.split("@")[0],
+        id: registeredUser?.id || `usr_${Date.now()}`,
+        name: registeredUser?.name || fallbackName,
         email: targetEmail,
         role: "customer",
       },

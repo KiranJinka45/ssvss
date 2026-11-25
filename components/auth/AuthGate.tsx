@@ -15,7 +15,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const isLoginRoute = pathname === "/login";
+  const isLoginRoute =
+    pathname === "/login" || pathname === "/signup" || pathname === "/register";
   const isAdminRoute = pathname?.startsWith("/admin");
   const isAuthBypassed = isLoginRoute || isAdminRoute;
 

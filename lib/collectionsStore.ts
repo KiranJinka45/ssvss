@@ -81,28 +81,63 @@ export const DEFAULT_COLLECTION_METAS = {
 export interface HeroSlide {
   id: number;
   image: string;
+  eyebrow?: string;
   title: string;
+  titleAccent?: string;
   subtitle: string;
+  highlights?: string[];
+  ctaLabel?: string;
   href: string;
 }
 
 export const HERO_SLIDE_PRESETS: Record<string, { label: string; slides: HeroSlide[] }> = {
   set1: {
-    label: "Split Heritage Carousel (Recommended)",
+    label: "Split Heritage Carousel (3 Unique Slides)",
     slides: [
       {
         id: 1,
         image: "/images/hero/heritage-split-1.jpg",
-        title: "Dharmavaram & Kanchipuram Pure Silk Sarees",
+        eyebrow: "HERITAGE HANDLOOM SILK LOOMS • ESTD. 1974",
+        title: "Dharmavaram & Kanchipuram",
+        titleAccent: "Pure Silk Sarees",
         subtitle: "The Splendor of Royal Heritage, Woven in Golden Zari",
+        highlights: [
+          "100% Pure Mulberry Silk",
+          "Silk Mark Certified",
+          "Direct from Artisan Weavers",
+        ],
+        ctaLabel: "Explore Pure Silk",
         href: "/collections/pure-silk",
       },
       {
         id: 2,
         image: "/images/hero/heritage-split-2.jpg",
-        title: "Dharmavaram & Kanchipuram Pure Silk Sarees",
-        subtitle: "The Splendor of Royal Heritage, Woven in Golden Zari",
+        eyebrow: "BRIDAL MUHURTHAM ARCHIVE • SINGLE-LOOM",
+        title: "Royal Bridal",
+        titleAccent: "Heirloom Weaves",
+        subtitle: "18–24 Days of Hand-Interlocked Double-Shuttle Korvai Craft",
+        highlights: [
+          "840g Heavy Bridal Silk",
+          "Tested 3G Pure Gold Zari",
+          "Zero Showroom Markup",
+        ],
+        ctaLabel: "Explore Bridal Looms",
         href: "/collections/handloom-bridal",
+      },
+      {
+        id: 3,
+        image: "/images/hero/heritage-split-3.jpg",
+        eyebrow: "FESTIVE & CELEBRATION EDIT • LOOM-DIRECT",
+        title: "Festive Grace &",
+        titleAccent: "Timeless Tradition",
+        subtitle: "Luminous Temple Borders Crafted for Weddings & Family Celebrations",
+        highlights: [
+          "Lightweight 580g Drape",
+          "Authentic Korvai Borders",
+          "24-Hr Insured Dispatch",
+        ],
+        ctaLabel: "Explore Festive Silks",
+        href: "/collections/semi-silk",
       },
     ],
   },

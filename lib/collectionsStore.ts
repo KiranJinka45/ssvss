@@ -88,28 +88,21 @@ export interface HeroSlide {
 
 export const HERO_SLIDE_PRESETS: Record<string, { label: string; slides: HeroSlide[] }> = {
   set1: {
-    label: "Version 1 (High Quality Cut Banners - Recommended)",
+    label: "Split Heritage Carousel (Recommended)",
     slides: [
       {
         id: 1,
-        image: "/images/banners/banner-set1-1-dharmavaram-pure-silk.jpg",
-        title: "Dharmavaram Silk Sarees - A Heritage Woven in Silk",
-        subtitle: "Pure Mulberry Silk with Double-Shuttle Korvai Borders",
+        image: "/images/hero/heritage-split-1.jpg",
+        title: "Dharmavaram & Kanchipuram Pure Silk Sarees",
+        subtitle: "The Splendor of Royal Heritage, Woven in Golden Zari",
         href: "/collections/pure-silk",
       },
       {
         id: 2,
-        image: "/images/banners/banner-set1-2-handloom-heritage.jpg",
-        title: "Handloom Sarees - Pure Weaves. Lasting Grace",
-        subtitle: "Direct From Dharmavaram Pit-Looms Since 1974",
+        image: "/images/hero/heritage-split-2.jpg",
+        title: "Dharmavaram & Kanchipuram Pure Silk Sarees",
+        subtitle: "The Splendor of Royal Heritage, Woven in Golden Zari",
         href: "/collections/handloom-bridal",
-      },
-      {
-        id: 3,
-        image: "/images/banners/banner-set1-3-semi-kanchipuram.jpg",
-        title: "Semi Kanchipuram Dharmavaram Silks - Royal Elegance. Everyday Grace",
-        subtitle: "High-Velocity Festive Drapes with Tested Antique Gold Zari",
-        href: "/collections/semi-silk",
       },
     ],
   },

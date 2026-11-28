@@ -6,35 +6,6 @@ import { ChevronLeft, ChevronRight, ArrowRight, Video } from "lucide-react";
 import { DEFAULT_HERO_SLIDES, HeroSlide } from "@/lib/collectionsStore";
 import { LiveCallModal } from "@/components/product/LiveCallModal";
 
-function CornerFiligree({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      aria-hidden="true"
-      className={`w-8 h-8 sm:w-10 sm:h-10 text-[#C59B27]/70 pointer-events-none ${className || ""}`}
-    >
-      <path
-        d="M4 44V16C4 9.373 9.373 4 16 4H44"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path
-        d="M9 36V18C9 13.029 13.029 9 18 9H36"
-        stroke="currentColor"
-        strokeWidth="0.9"
-        strokeOpacity="0.65"
-      />
-      <circle cx="14" cy="14" r="2" fill="currentColor" fillOpacity="0.7" />
-      <path
-        d="M4 22C7.5 22 10 19.5 10 16M22 4C22 7.5 19.5 10 16 10"
-        stroke="currentColor"
-        strokeWidth="0.9"
-      />
-    </svg>
-  );
-}
-
 export function HeroEditorial() {
   const [slides, setSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -107,16 +78,16 @@ export function HeroEditorial() {
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#FAF7F2] border-b border-loom-border/60">
+    <section className="relative w-full overflow-hidden bg-[#FAF7F2]">
       <div
-        className="relative w-full min-h-[680px] sm:min-h-[720px] lg:min-h-[540px] lg:h-[calc(100vh-104px)] lg:max-h-[760px] select-none overflow-hidden group touch-pan-y"
+        className="relative w-full min-h-[660px] sm:min-h-[700px] lg:min-h-[540px] lg:h-[calc(100vh-104px)] lg:max-h-[760px] select-none overflow-hidden group touch-pan-y"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Full Split-Screen Slides (Image + Text transition together) */}
+        {/* Seamless Full-Width Slides (Image + Text transition together, zero border/outline) */}
         {slides.map((slide, index) => {
           const isActive = index === currentSlide;
           const highlights = slide.highlights || [
@@ -128,14 +99,14 @@ export function HeroEditorial() {
           return (
             <div
               key={slide.id || index}
-              className={`absolute inset-0 grid grid-cols-1 lg:grid-cols-2 transition-all duration-700 ease-in-out ${
+              className={`absolute inset-0 grid grid-cols-1 lg:grid-cols-12 transition-all duration-700 ease-in-out ${
                 isActive
                   ? "opacity-100 translate-x-0 z-10 pointer-events-auto"
                   : "opacity-0 translate-x-4 z-0 pointer-events-none"
               }`}
             >
-              {/* Left 50%: Portrait Saree Photo */}
-              <div className="relative w-full h-[360px] sm:h-[420px] lg:h-full overflow-hidden bg-[#EAE3D5]">
+              {/* Left Side: Portrait Saree Photo with Seamless Right-Edge Blend */}
+              <div className="relative lg:col-span-6 w-full h-[360px] sm:h-[420px] lg:h-full overflow-hidden bg-[#FAF7F2]">
                 <Link
                   href={slide.href}
                   className="block w-full h-full relative cursor-pointer"
@@ -149,54 +120,44 @@ export function HeroEditorial() {
                     decoding="async"
                     className="w-full h-full object-cover object-top"
                   />
+                  {/* Soft feather blend into the right-side cream canvas */}
+                  <div className="hidden lg:block absolute inset-y-0 right-0 w-36 bg-gradient-to-r from-transparent via-[#FAF7F2]/60 to-[#FAF7F2] pointer-events-none" />
+                  <div className="lg:hidden absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#FAF7F2] to-transparent pointer-events-none" />
                 </Link>
               </div>
 
-              {/* Right 50%: Ornamental Heritage Card with Slide-Specific Copy */}
-              <div className="relative flex items-center justify-center bg-[#FAF7F2] p-4 sm:p-6 lg:p-8">
-                <div className="relative w-full h-full flex flex-col items-center justify-center text-center px-6 py-8 sm:px-10 sm:py-10 border border-[#C59B27]/45 bg-[#FCF9F3] shadow-xs">
-                  {/* 4 Gold Corner Filigrees */}
-                  <CornerFiligree className="absolute top-2 left-2" />
-                  <CornerFiligree className="absolute top-2 right-2 rotate-90" />
-                  <CornerFiligree className="absolute bottom-2 right-2 rotate-180" />
-                  <CornerFiligree className="absolute bottom-2 left-2 -rotate-90" />
-
+              {/* Right Side: Clean Open Editorial Text Beside Image (No Outline / No Box) */}
+              <div className="relative lg:col-span-6 flex items-center justify-center bg-[#FAF7F2] px-6 py-8 sm:px-10 lg:px-14">
+                <div className="w-full max-w-xl flex flex-col items-center text-center">
                   {/* Eyebrow */}
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-[#8E6F2E] mb-3">
                     {slide.eyebrow || "HERITAGE HANDLOOM SILK LOOMS • ESTD. 1974"}
                   </p>
 
-                  {/* Ornamental Gold Divider */}
-                  <div className="flex items-center justify-center gap-2 mb-4 w-48">
-                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#C59B27]/60" />
-                    <span className="text-[#C59B27] text-xs">✦</span>
-                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#C59B27]/60" />
-                  </div>
-
                   {/* Main Display Headline */}
-                  <h1 className="font-serif text-3xl sm:text-4xl xl:text-[2.75rem] font-bold text-[#5B1020] leading-[1.15] tracking-tight">
+                  <h1 className="font-serif text-3xl sm:text-4xl xl:text-[3rem] font-bold text-[#5B1020] leading-[1.12] tracking-tight">
                     {slide.title}
                   </h1>
                   {slide.titleAccent && (
-                    <p className="font-serif text-xl sm:text-2xl xl:text-[1.7rem] text-[#5B1020] mt-1 font-medium">
+                    <p className="font-serif text-2xl sm:text-3xl xl:text-[2.1rem] text-[#5B1020] mt-1 font-medium">
                       {slide.titleAccent}
                     </p>
                   )}
 
+                  {/* Subtle Ornamental Divider */}
+                  <div className="flex items-center justify-center gap-2.5 my-4 w-52">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#C59B27]/60" />
+                    <span className="text-[#C59B27] text-xs">❖</span>
+                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#C59B27]/60" />
+                  </div>
+
                   {/* Subtitle / Description */}
-                  <p className="text-xs sm:text-sm text-[#6E563F] mt-3 max-w-md leading-relaxed">
+                  <p className="text-xs sm:text-sm lg:text-base text-[#5E4A36] max-w-md leading-relaxed">
                     {slide.subtitle}
                   </p>
 
-                  {/* Divider */}
-                  <div className="flex items-center justify-center gap-2 my-5 w-56">
-                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#C59B27]/50" />
-                    <span className="text-[#C59B27] text-[10px]">❖</span>
-                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#C59B27]/50" />
-                  </div>
-
-                  {/* 3 Slide-Specific Trust Bullets */}
-                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs text-[#4A3B2C] font-medium mb-6">
+                  {/* 3 Slide-Specific Highlights */}
+                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs text-[#4A3B2C] font-medium mt-4 mb-6">
                     {highlights.map((bullet, bIdx) => (
                       <span key={bIdx}>• {bullet}</span>
                     ))}
@@ -206,7 +167,7 @@ export function HeroEditorial() {
                   <div className="flex flex-wrap items-center justify-center gap-4">
                     <Link
                       href={slide.href || "/collections/pure-silk"}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-b from-[#7B1A2E] to-[#5B1020] hover:from-[#5B1020] hover:to-[#3D0A15] text-[#FAF7F2] text-xs sm:text-sm font-semibold shadow-md border border-[#C59B27]/40 transition-all hover:scale-[1.02] active:scale-95"
+                      className="inline-flex items-center gap-2 px-7 py-3 rounded-lg bg-[#6B1224] hover:bg-[#4D0B18] text-[#FAF7F2] text-xs sm:text-sm font-semibold shadow-md transition-all hover:scale-[1.02] active:scale-95"
                     >
                       <span>{slide.ctaLabel || "Explore Collection"}</span>
                       <ArrowRight className="w-4 h-4" />
@@ -234,7 +195,7 @@ export function HeroEditorial() {
               type="button"
               onClick={handlePrev}
               aria-label="Previous Slide"
-              className="absolute left-3 top-[180px] sm:top-[210px] lg:top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/45 hover:bg-black/75 text-white backdrop-blur-xs border border-white/20 shadow-md transition-all opacity-80 lg:opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+              className="absolute left-3 top-[180px] sm:top-[210px] lg:top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs transition-all opacity-80 lg:opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
               <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -243,7 +204,7 @@ export function HeroEditorial() {
               type="button"
               onClick={handleNext}
               aria-label="Next Slide"
-              className="absolute right-3 top-[180px] sm:top-[210px] lg:top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-[#5B1020]/80 hover:bg-[#5B1020] text-white backdrop-blur-xs border border-[#C59B27]/40 shadow-md transition-all opacity-80 lg:opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
+              className="absolute right-3 top-[180px] sm:top-[210px] lg:top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-[#5B1020]/75 hover:bg-[#5B1020] text-white backdrop-blur-xs transition-all opacity-80 lg:opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95"
             >
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -252,7 +213,7 @@ export function HeroEditorial() {
 
         {/* Carousel Slide Indicators at Bottom Center */}
         {slides.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-[#5B1020]/85 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-[#C59B27]/40 shadow-sm">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-[#5B1020]/80 backdrop-blur-sm px-3.5 py-1.5 rounded-full shadow-sm">
             {slides.map((_, index) => (
               <button
                 key={index}
